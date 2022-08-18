@@ -71,5 +71,5 @@ func main() {
 		zap.L().Error(fmt.Sprintf("Server Shutdown error: %s", err.Error()))
 	}
 
-	zap.L().Info("Server exiting")
+	zap.L().Info("Server exited")
 }
