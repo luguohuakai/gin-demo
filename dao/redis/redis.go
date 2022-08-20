@@ -37,7 +37,7 @@ func GetRds() *redis.Client {
 	if _, err := Rds.Ping().Result(); err != nil {
 		fmt.Println(fmt.Sprintf("%s -> Reconnecting redis....", err))
 		_ = Init()
-		defer Close()
+		//defer Close()
 
 		if _, err := Rds.Ping().Result(); err != nil {
 			zap.L().Error(fmt.Sprintf("Redis closed error: %s", err))

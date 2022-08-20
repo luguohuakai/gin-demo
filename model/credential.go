@@ -39,8 +39,7 @@ func (c Credential) UpdateCredential(newCredential webauthn.Credential) error {
 	if err != nil {
 		return err
 	}
-	c.Credential = string(marshal)
-	return mysql.GetDB().Update(&c).Error
+	return mysql.GetDB().Model(&c).Update(Credential{Credential: string(marshal)}).Error
 }
 
 func (c Credential) GetCredential() (cred webauthn.Credential, err error) {

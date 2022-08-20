@@ -51,10 +51,14 @@ func GetUser(username string) (user User, err error) {
 		}
 	}
 	if err == nil {
-		var c Credential
-		_ = mysql.GetDB().First(&c, "uid = ?", user.ID)
-		credential, _ := c.GetCredential()
-		user.credentials = append(user.credentials, credential)
+		var c []Credential
+		err = mysql.GetDB().Find(&c, "uid = ?", user.ID).Error
+		if err == nil {
+			for _, v := range c {
+				credential, _ := v.GetCredential()
+				user.credentials = append(user.credentials, credential)
+			}
+		}
 	}
 	return
 }

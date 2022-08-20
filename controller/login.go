@@ -2,12 +2,12 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"srun/cfg"
+	"srun/dao/mysql"
 	"srun/dao/redis"
 	"srun/model"
 )
@@ -21,16 +21,12 @@ func LoginBegin(c *gin.Context) {
 	options, sessionData, err := cfg.WAWeb.BeginLogin(&user)
 	// handle errors if present
 	if err != nil {
-		fmt.Println("======")
-		fmt.Println(err.Error())
 		fail(c, err)
 		return
 	}
 	// store the sessionData values
 	marshal, err := json.Marshal(sessionData)
 	if err != nil {
-		fmt.Println("++++++")
-		fmt.Println(err.Error())
 		fail(c, err)
 		return
 	}
@@ -70,7 +66,17 @@ func LoginFinish(c *gin.Context) {
 		fail(c, err)
 		return
 	}
-	fmt.Println(credential)
+	var cred model.Credential
+	if err = mysql.GetDB().First(&cred, "uid = ? and cid = ?", user.ID, credential.ID).Error; err == nil {
+		err := cred.UpdateCredential(*credential)
+		if err != nil {
+			fail(c, err)
+			return
+		}
+	} else {
+		fail(c, err)
+		return
+	}
 	// If login was successful, handle next steps
 	success(c, returnNoData(http.StatusOK, "登录成功"))
 }
