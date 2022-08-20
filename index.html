@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebAuthn</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<label for="username">用户名:</label>
+<br>
+<input type="text" id="username" placeholder="请输入用户名">
+<br>
+<br>
+<button onclick="registerUser()">注册</button>
+<button onclick="loginUser()">登录</button>
+
+<script type="text/javascript">
+    $(function () {
+        if (!window.PublicKeyCredential) {
+            alert('抱歉, 你的浏览器不支持WebAuthn')
+        }
+    })
+
+    // 将 Base64 转为 ArrayBuffer
+    function bufferDecode(value) {
+        return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+    }
+
+    // 将 ArrayBuffer 转为 URLBase64
+    function bufferEncode(value) {
+        return btoa(String.fromCharCode.apply(null, new Uint8Array(value)))
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
+            .replace(/=/g, "");
+    }
+
+    function registerUser() {
+        let username = $('#username').val()
+        if (username === '') {
+            alert('用户名必填')
+            return
+        }
+
+        $.get(
+            '/register/begin',
+            {username},
+            function (data) {
+                console.log("开始请求: /register/begin")
+                console.log("返回数据如下:")
+                console.log(data)
+                return data
+            }, 'json'
+        )
+            .then((da) => {
+                let data = da.data
+                // 处理凭据选项
+                console.log("凭据选项如下:")
+                console.log(data)
+                console.log("开始处理凭据选项:")
+                data.publicKey.challenge = bufferDecode(data.publicKey.challenge)
+                data.publicKey.user.id = bufferDecode(data.publicKey.user.id)
+                if (data.publicKey.excludeCredentials) {
+                    for (let i = 0; i < data.publicKey.excludeCredentials.length; i++) {
+                        data.publicKey.excludeCredentials[i].id = bufferDecode(data.publicKey.excludeCredentials[i].id)
+                    }
+                }
+                // 生成凭据
+                console.log("浏览器开始创建凭据")
+                return navigator.credentials.create({
+                    publicKey: data.publicKey
+                })
+            })
+            .then((credential) => {
+                console.log("浏览器生成的凭据:")
+                console.log(credential)
+                // 用凭据开证明
+                let attestationObj = credential.response.attestationObject
+                let clientDataJson = credential.response.clientDataJSON
+                let rawId = credential.rawId
+                $.post(
+                    '/register/finish?username=' + username,
+                    JSON.stringify({
+                        id: credential.id,
+                        rawId: bufferEncode(rawId),
+                        type: credential.type,
+                        response: {
+                            attestationObject: bufferEncode(attestationObj),
+                            clientDataJSON: bufferEncode(clientDataJson)
+                        }
+                    }),
+                    function (data) {
+                        console.log("请求接口: /register/finish")
+                        console.log("接口返回数据如下:")
+                        console.log(data)
+
+                        if (data !== undefined) {
+                            if (data.code === 200) {
+                                console.log("注册成功....")
+                                console.log(data)
+                                alert("注册成功: " + username)
+                            } else {
+                                console.log("注册失败....")
+                                console.log(data)
+                                alert("注册失败: " + username + " error: " + data.error)
+                            }
+                        } else {
+                            console.log('注册接口调用失败....')
+                            console.error(data)
+                            alert('注册接口调用失败....')
+                        }
+                    }, 'json'
+                )
+            })
+            .catch((err) => {
+                console.error("发生错误....")
+                console.error(err)
+                alert("发生错误: " + username)
+            })
+    }
+
+    function loginUser() {
+        let username = $('#username').val()
+        if (username === '') {
+            alert('用户名必填')
+            return
+        }
+
+        $.get(
+            '/login/begin',
+            {username},
+            function (data) {
+                console.log('开始登录, 请求接口: /login/begin')
+                console.log('返回数据如下:')
+                console.log(data)
+                return data
+            }, 'json'
+        )
+            .then((data) => {
+                let dt = data.data
+                console.log('返回的凭据请求选项如下:')
+                console.log(dt)
+                console.log('开始处理凭据选项....')
+                dt.publicKey.challenge = bufferDecode(dt.publicKey.challenge)
+                dt.publicKey.allowCredentials.forEach(function (listItem) {
+                    listItem.id = bufferDecode(listItem.id)
+                })
+                return navigator.credentials.get({
+                    publicKey: dt.publicKey
+                })
+            })
+            .then((assertion) => {
+                console.log('浏览器获取的证明如下:')
+                console.log(assertion)
+                console.log('开始请求完成接口:')
+                $.post(
+                    '/login/finish?username=' + username,
+                    JSON.stringify({
+                        id: assertion.id,
+                        rawId: bufferEncode(assertion.rawId),
+                        type: assertion.type,
+                        response: {
+                            authenticatorData: bufferEncode(assertion.response.authenticatorData),
+                            clientDataJSON: bufferEncode(assertion.response.clientDataJSON),
+                            signature: bufferEncode(assertion.response.signature),
+                            userHandle: bufferEncode(assertion.response.userHandle)
+                        }
+                    }),
+                    function (data) {
+                        console.log("请求接口: /login/finish")
+                        console.log("接口返回数据如下:")
+                        console.log(data)
+
+                        if (data !== undefined) {
+                            if (data.code === 200) {
+                                console.log("登录成功....")
+                                console.log(data)
+                                alert("登录成功: " + username)
+                            } else {
+                                console.log("登录失败....")
+                                console.log(data)
+                                alert("登录失败: " + username + " error: " + data.error)
+                            }
+                        } else {
+                            console.log('登录接口调用失败....')
+                            console.error(data)
+                            alert('登录接口调用失败....')
+                        }
+                    }, 'json'
+                )
+            })
+            .catch((err) => {
+                console.log('发生错误....')
+                console.error(err)
+                alert('发生错误: ' + username)
+            })
+    }
+
+</script>
+
+</body>
+</html>

@@ -50,10 +50,18 @@ func GetUser(username string) (user User, err error) {
 			err = mysql.GetDB().Create(&user).Error
 		}
 	}
+	if err == nil {
+		var c Credential
+		_ = mysql.GetDB().First(&c, "uid = ?", user.ID)
+		credential, _ := c.GetCredential()
+		user.credentials = append(user.credentials, credential)
+	}
 	return
 }
 
 // AddCredential associates the credential to the user
-func (u *User) AddCredential(cred webauthn.Credential) {
+func (u *User) AddCredential(cred webauthn.Credential) error {
 	u.credentials = append(u.credentials, cred)
+	var c Credential
+	return c.AddCredential(u.ID, cred)
 }

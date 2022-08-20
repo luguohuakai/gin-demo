@@ -12,21 +12,25 @@ import (
 	"srun/model"
 )
 
-func Begin(c *gin.Context) {
-	user, err := model.GetUser(c.Query("username")) // Find or create the new user
+func LoginBegin(c *gin.Context) {
+	user, err := model.GetUser(c.Query("username")) // Find the user
 	if err != nil {
 		fail(c, err)
 		return
 	}
-	options, sessionData, err := cfg.WAWeb.BeginRegistration(&user)
+	options, sessionData, err := cfg.WAWeb.BeginLogin(&user)
 	// handle errors if present
 	if err != nil {
+		fmt.Println("======")
+		fmt.Println(err.Error())
 		fail(c, err)
 		return
 	}
 	// store the sessionData values
 	marshal, err := json.Marshal(sessionData)
 	if err != nil {
+		fmt.Println("++++++")
+		fmt.Println(err.Error())
 		fail(c, err)
 		return
 	}
@@ -35,7 +39,7 @@ func Begin(c *gin.Context) {
 	// options.publicKey contain our registration options
 }
 
-func Finish(c *gin.Context) {
+func LoginFinish(c *gin.Context) {
 	user, err := model.GetUser(c.Query("username")) // Get the user
 	if err != nil {
 		fail(c, err)
@@ -54,27 +58,19 @@ func Finish(c *gin.Context) {
 		return
 	}
 	// using gorilla/sessions it could look like this
-	//sessionData := store.Get(r, "registration-session")
-	parsedResponse, err := protocol.ParseCredentialCreationResponseBody(c.Request.Body)
+	//sessionData := store.Get(r, "login-session")
+	parsedResponse, err := protocol.ParseCredentialRequestResponseBody(c.Request.Body)
 	if err != nil {
-		fmt.Println(err.Error())
 		fail(c, err)
 		return
 	}
-	credential, err := cfg.WAWeb.CreateCredential(&user, sessionData, parsedResponse)
+	credential, err := cfg.WAWeb.ValidateLogin(&user, sessionData, parsedResponse)
 	// Handle validation or input errors
 	if err != nil {
 		fail(c, err)
 		return
 	}
-
-	// If creation was successful, store the credential object
-	err = user.AddCredential(*credential)
-	if err != nil {
-		fail(c, err)
-		return
-	}
-
-	success(c, returnNoData(http.StatusOK, "注册成功")) // Handle next steps
-
+	fmt.Println(credential)
+	// If login was successful, handle next steps
+	success(c, returnNoData(http.StatusOK, "登录成功"))
 }
