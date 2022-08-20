@@ -18,6 +18,22 @@ func Begin(c *gin.Context) {
 		fail(c, err)
 		return
 	}
+
+	// Updating the AuthenticatorSelection options.
+	// See the struct declarations for values
+	//authSelect := protocol.AuthenticatorSelection{
+	//	AuthenticatorAttachment: protocol.Platform,                // 使用平台验证器
+	//	RequireResidentKey:      protocol.ResidentKeyUnrequired(), // 不需要常驻密钥
+	//	UserVerification:        protocol.VerificationRequired,    // 需要用户验证
+	//}
+
+	// Updating the ConveyancePreference options.
+	// See the struct declarations for values
+	//conveyancePref := protocol.PreferNoAttestation // 证明传输偏好 不需要用户同意
+
+	// Handle next steps
+
+	//options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithConveyancePreference(conveyancePref))
 	options, sessionData, err := cfg.WAWeb.BeginRegistration(&user)
 	// handle errors if present
 	if err != nil {

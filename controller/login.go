@@ -18,7 +18,25 @@ func LoginBegin(c *gin.Context) {
 		fail(c, err)
 		return
 	}
-	options, sessionData, err := cfg.WAWeb.BeginLogin(&user)
+
+	// Updating the AuthenticatorSelection options.
+	// See the struct declarations for values
+	//allowList := make([]protocol.CredentialDescriptor, 1)
+	//allowList[0] = protocol.CredentialDescriptor{
+	//	//CredentialID: credentialToAllowID, // 允许认证的凭据ID
+	//	Type: protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
+	//	//Transport: []protocol.AuthenticatorTransport{
+	//	//	protocol.NFC,
+	//	//	protocol.Internal,
+	//	//	protocol.USB,
+	//	//	protocol.BLE,
+	//	//}, // 允许的认证器类型
+	//}
+
+	// Handle next steps
+
+	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithAllowedCredentials(allowList), webauthn.WithUserVerification(protocol.VerificationRequired))
+	options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithUserVerification(protocol.VerificationPreferred))
 	// handle errors if present
 	if err != nil {
 		fail(c, err)
