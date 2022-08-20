@@ -69,12 +69,12 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	zap.L().Info("Shutdown Server....")
+	zap.L().Warn("Shutdown Server....")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		zap.L().Error(fmt.Sprintf("Server Shutdown error: %s", err.Error()))
 	}
 
-	zap.L().Info("Server exited")
+	zap.L().Warn("Server exited")
 }

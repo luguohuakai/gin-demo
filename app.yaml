@@ -5,7 +5,7 @@ app:
   host: "localhost"
   port: 18080
 log:
-  level: "info"
+  level: "warn"
   filename: "app.log"
   max_size: 100
   max_age: 30
