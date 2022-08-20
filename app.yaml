@@ -1,8 +1,9 @@
 app:
   name: "gin_demo"
   mode: "dev"
+  protocol: "http"
+  host: "localhost"
   port: 18080
-  https: false
 log:
   level: "info"
   filename: "app.log"
@@ -13,8 +14,8 @@ mysql:
   ip: "127.0.0.1"
   port: 3306
   pwd: "Srun@4000"
-  user: "root"
-  dbname: "demo"
+  user: "webauthn"
+  dbname: "webauthn"
   max_life_time: 5
   max_open: 100
   max_idle: 50

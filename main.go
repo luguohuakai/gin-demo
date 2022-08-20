@@ -48,6 +48,11 @@ func main() {
 		zap.L().Info("Init redis successful....")
 	}
 
+	if err := cfg.InitWebAuthn(); err != nil {
+		fmt.Println(fmt.Sprintf("Init webauthn error: %s", err.Error()))
+		zap.L().Error(fmt.Sprintf("Init webauthn error: %s", err.Error()))
+	}
+
 	r := routes.Setup()
 
 	server := &http.Server{
