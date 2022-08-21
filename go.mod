@@ -64,8 +64,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/onsi/ginkgo v1.16.5 // indirect
-	github.com/onsi/gomega v1.20.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/prometheus/client_golang v1.11.1 // indirect
@@ -104,7 +102,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	golang.org/x/tools v0.1.5 // indirect
