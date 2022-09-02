@@ -10,6 +10,7 @@ import (
 	"srun/dao/mysql"
 	"srun/dao/redis"
 	"srun/model"
+	"time"
 )
 
 func LoginBegin(c *gin.Context) {
@@ -21,22 +22,24 @@ func LoginBegin(c *gin.Context) {
 
 	// Updating the AuthenticatorSelection options.
 	// See the struct declarations for values
-	//allowList := make([]protocol.CredentialDescriptor, 1)
-	//allowList[0] = protocol.CredentialDescriptor{
-	//	//CredentialID: credentialToAllowID, // 允许认证的凭据ID
-	//	Type: protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
-	//	//Transport: []protocol.AuthenticatorTransport{
-	//	//	protocol.NFC,
-	//	//	protocol.Internal,
-	//	//	protocol.USB,
-	//	//	protocol.BLE,
-	//	//}, // 允许的认证器类型
-	//}
+	allowList := make([]protocol.CredentialDescriptor, 1)
+	allowList[0] = protocol.CredentialDescriptor{
+		//CredentialID: credentialToAllowID, // 允许认证的凭据ID
+		CredentialID: user.WebAuthnCredentials()[0].ID, // 允许认证的凭据ID
+		Type:         protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
+		Transport: []protocol.AuthenticatorTransport{
+			protocol.Internal,
+			protocol.USB,
+			protocol.NFC,
+			protocol.BLE,
+		}, // 允许的认证器类型
+	}
 
 	// Handle next steps
 
-	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithAllowedCredentials(allowList), webauthn.WithUserVerification(protocol.VerificationRequired))
-	options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithUserVerification(protocol.VerificationPreferred))
+	options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithAllowedCredentials(allowList))
+	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user)
+	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithUserVerification(protocol.VerificationPreferred))
 	// handle errors if present
 	if err != nil {
 		fail(c, err)
@@ -48,7 +51,7 @@ func LoginBegin(c *gin.Context) {
 		fail(c, err)
 		return
 	}
-	redis.GetRds().Set("session:"+c.Query("username"), marshal, 0)
+	redis.GetRds().Set("session:"+c.Query("username"), marshal, time.Minute)
 	success(c, options) // return the options generated
 	// options.publicKey contain our registration options
 }

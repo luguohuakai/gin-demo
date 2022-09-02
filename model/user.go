@@ -2,8 +2,10 @@ package model
 
 import (
 	"encoding/binary"
+	"errors"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/jinzhu/gorm"
+	"github.com/luguohuakai/north/srun"
 	"srun/dao/mysql"
 	"strings"
 )
@@ -42,7 +44,18 @@ func (u User) WebAuthnCredentials() []webauthn.Credential {
 	return u.credentials
 }
 
-func GetUser(username string) (user User, err error) {
+func GetUser(username string, pwd ...string) (user User, err error) {
+	if len(pwd) > 0 {
+		// : 跟北向接口交互 判断用户名/密码是否正确
+		httpResult, err := srun.Request("/api/v1/user/validate-users", "post", map[string]string{"user_name": username, "password": pwd[0]})
+		if err != nil {
+			return
+		} else {
+			if httpResult.Code != 0 {
+				return User{}, errors.New(httpResult.Message)
+			}
+		}
+	}
 	if err = mysql.GetDB().First(&user, "name = ?", username).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			user.Name = username

@@ -15,6 +15,7 @@ require (
 
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
+	github.com/appleboy/gin-jwt/v2 v2.8.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
@@ -38,7 +39,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.2.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -56,6 +57,7 @@ require (
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/luguohuakai/north v0.0.0-20220830032947-57dc0feb9d08 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.12 // indirect

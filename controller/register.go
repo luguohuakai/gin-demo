@@ -10,10 +10,11 @@ import (
 	"srun/cfg"
 	"srun/dao/redis"
 	"srun/model"
+	"time"
 )
 
 func Begin(c *gin.Context) {
-	user, err := model.GetUser(c.Query("username")) // Find or create the new user
+	user, err := model.GetUser(c.Query("username"), c.PostForm("password")) // Find or create the new user
 	if err != nil {
 		fail(c, err)
 		return
@@ -21,20 +22,24 @@ func Begin(c *gin.Context) {
 
 	// Updating the AuthenticatorSelection options.
 	// See the struct declarations for values
-	//authSelect := protocol.AuthenticatorSelection{
-	//	AuthenticatorAttachment: protocol.Platform,                // 使用平台验证器
-	//	RequireResidentKey:      protocol.ResidentKeyUnrequired(), // 不需要常驻密钥
-	//	UserVerification:        protocol.VerificationRequired,    // 需要用户验证
-	//}
+	authSelect := protocol.AuthenticatorSelection{
+		AuthenticatorAttachment: protocol.Platform,                // platform：表示仅接受平台内置的、无法移除的认证器，如手机的指纹识别设备 cross-platform：表示仅接受外部认证器，如 USB Key
+		RequireResidentKey:      protocol.ResidentKeyUnrequired(), // 是否要求将私钥钥永久存储于认证器中 // 设置为true可实现无用户名登录
+		UserVerification:        protocol.VerificationDiscouraged, // 依赖方不关心用户验证
+	}
 
 	// Updating the ConveyancePreference options.
 	// See the struct declarations for values
-	//conveyancePref := protocol.PreferNoAttestation // 证明传输偏好 不需要用户同意
+	//conveyancePref := protocol.PreferNoAttestation // 如果你没有高安全需求（如银行交易等），请不要向认证器索取证明，即将 attestation 设置为 "none" 对于普通身份认证来说，要求证明不必要的，且会有浏览器提示打扰到用户
+	//extension := protocol.AuthenticationExtensions{
+	//	"uvm":          true,       // 要求认证器返回用户进行验证的方法
+	//	"txAuthSimple": "你正在注册....", // 在认证器上显示与交易有关的简短消息
+	//}
 
 	// Handle next steps
 
-	//options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithConveyancePreference(conveyancePref))
-	options, sessionData, err := cfg.WAWeb.BeginRegistration(&user)
+	//options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithConveyancePreference(conveyancePref), webauthn.WithExtensions(extension))
+	options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect))
 	// handle errors if present
 	if err != nil {
 		fail(c, err)
@@ -46,7 +51,7 @@ func Begin(c *gin.Context) {
 		fail(c, err)
 		return
 	}
-	redis.GetRds().Set("session:"+c.Query("username"), marshal, 0)
+	redis.GetRds().Set("session:"+c.Query("username"), marshal, time.Minute)
 	success(c, options) // return the options generated
 	// options.publicKey contain our registration options
 }
