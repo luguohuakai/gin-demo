@@ -2,10 +2,12 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"net/http"
 	"srun/cfg"
 	"srun/dao/redis"
@@ -97,5 +99,19 @@ func Finish(c *gin.Context) {
 	}
 
 	success(c, returnNoData(http.StatusOK, "注册成功")) // Handle next steps
+}
 
+func UserExists(c *gin.Context) {
+	if c.Query("username") == "" {
+		fail(c, errors.New("username can not be empty"))
+		return
+	}
+	if err := model.UserIsWebAuthn(c.Query("username")); err == nil {
+		success(c)
+	} else {
+		if gorm.IsRecordNotFoundError(err) {
+			fail(c, err, returnNoData(4001, "user not register"))
+		}
+		fail(c, err)
+	}
 }

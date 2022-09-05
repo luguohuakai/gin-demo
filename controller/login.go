@@ -14,7 +14,7 @@ import (
 )
 
 func LoginBegin(c *gin.Context) {
-	user, err := model.GetUser(c.Query("username")) // Find the user
+	user, err := model.GetLoginUser(c.Query("username")) // Find the user
 	if err != nil {
 		fail(c, err)
 		return
@@ -57,7 +57,7 @@ func LoginBegin(c *gin.Context) {
 }
 
 func LoginFinish(c *gin.Context) {
-	user, err := model.GetUser(c.Query("username")) // Get the user
+	user, err := model.GetLoginUser(c.Query("username")) // Get the user
 	if err != nil {
 		fail(c, err)
 		return
@@ -99,5 +99,6 @@ func LoginFinish(c *gin.Context) {
 		return
 	}
 	// If login was successful, handle next steps
+	// todo: 调用4k单点或无密码认证
 	success(c, returnNoData(http.StatusOK, "登录成功"))
 }

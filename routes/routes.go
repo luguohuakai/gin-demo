@@ -34,6 +34,7 @@ func Setup() *gin.Engine {
 
 	r.POST("/register/begin", controller.Begin)
 	r.POST("/register/finish", controller.Finish)
+	r.GET("/register/user-exists", controller.UserExists)
 	r.GET("/login/begin", controller.LoginBegin)
 	r.POST("/login/finish", controller.LoginFinish)
 

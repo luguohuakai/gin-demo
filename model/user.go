@@ -74,7 +74,28 @@ func GetUser(username string, pwd ...string) (user User, err error) {
 			}
 		}
 	}
+
 	return
+}
+
+func GetLoginUser(username string) (user User, err error) {
+	if err = mysql.GetDB().First(&user, "name = ?", username).Error; err == nil {
+		var c []Credential
+		if err = mysql.GetDB().Find(&c, "uid = ?", user.ID).Error; err == nil {
+			for _, v := range c {
+				credential, _ := v.GetCredential()
+				user.credentials = append(user.credentials, credential)
+			}
+		}
+	}
+
+	return
+}
+
+// UserIsWebAuthn 验证用户是否已注册webauthn
+func UserIsWebAuthn(username string) (err error) {
+	var user User
+	return mysql.GetDB().Select("id").First(&user, "name = ?", username).Error
 }
 
 // AddCredential associates the credential to the user
