@@ -45,9 +45,10 @@ func (u User) WebAuthnCredentials() []webauthn.Credential {
 }
 
 func GetUser(username string, pwd ...string) (user User, err error) {
-	if len(pwd) > 0 {
+	if len(pwd) > 0 && pwd[0] != "" {
 		// : 跟北向接口交互 判断用户名/密码是否正确
-		httpResult, err := srun.Request("/api/v1/user/validate-users", "post", map[string]string{"user_name": username, "password": pwd[0]})
+		var httpResult *srun.HttpResult
+		httpResult, err = srun.Request("/api/v1/user/validate-users", "post", map[string]string{"user_name": username, "password": pwd[0]})
 		if err != nil {
 			return
 		} else {

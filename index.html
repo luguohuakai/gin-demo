@@ -41,22 +41,27 @@
             return
         }
 
-        $.get(
-            '/register/begin',
-            {username},
+        $.post(
+            '/register/begin?username=' + username,
+            // {"password": "123456"},
+            null,
             function (data) {
                 console.log("开始请求: /register/begin")
                 console.log("返回数据如下:")
                 console.log(data)
                 return data
-            }, 'json'
-        )
+            }, 'json')
+            .catch(function () {
+                alert('接口请求失败')
+            })
             .then((da) => {
                 let data = da.data
+                if (data === undefined) throw da
                 // 处理凭据选项
                 console.log("凭据选项如下:")
                 console.log(data)
                 console.log("开始处理凭据选项:")
+                if (data.publicKey === undefined) throw da
                 data.publicKey.challenge = bufferDecode(data.publicKey.challenge)
                 data.publicKey.user.id = bufferDecode(data.publicKey.user.id)
                 if (data.publicKey.excludeCredentials) {
@@ -99,22 +104,27 @@
                                 console.log(data)
                                 alert("注册成功: " + username)
                             } else {
-                                console.log("注册失败....")
-                                console.log(data)
+                                console.error("注册失败....")
+                                console.error(data)
                                 alert("注册失败: " + username + " error: " + data.error)
                             }
                         } else {
-                            console.log('注册接口调用失败....')
+                            console.error('注册接口调用失败....')
                             console.error(data)
                             alert('注册接口调用失败....')
                         }
-                    }, 'json'
-                )
+                    }, 'json')
+                    .fail(function () {
+                        throw '接口请求失败'
+                    })
             })
             .catch((err) => {
                 console.error("发生错误....")
                 console.error(err)
-                alert("发生错误: " + username)
+                let msg = ''
+                if (err.responseText !== undefined) msg = err.responseText
+                if (err.message !== undefined) msg = err.message
+                alert('发生错误: ' + msg)
             })
     }
 
@@ -133,13 +143,14 @@
                 console.log('返回数据如下:')
                 console.log(data)
                 return data
-            }, 'json'
-        )
+            }, 'json')
             .then((data) => {
                 let dt = data.data
+                if (dt === undefined) throw data
                 console.log('返回的凭据请求选项如下:')
                 console.log(dt)
                 console.log('开始处理凭据选项....')
+                if (dt.publicKey === undefined) throw data
                 dt.publicKey.challenge = bufferDecode(dt.publicKey.challenge)
                 dt.publicKey.allowCredentials.forEach(function (listItem) {
                     listItem.id = bufferDecode(listItem.id)
@@ -147,6 +158,7 @@
                 return navigator.credentials.get({
                     publicKey: dt.publicKey
                 })
+
             })
             .then((assertion) => {
                 console.log('浏览器获取的证明如下:')
@@ -176,22 +188,24 @@
                                 console.log(data)
                                 alert("登录成功: " + username)
                             } else {
-                                console.log("登录失败....")
-                                console.log(data)
+                                console.error("登录失败....")
+                                console.error(data)
                                 alert("登录失败: " + username + " error: " + data.error)
                             }
                         } else {
-                            console.log('登录接口调用失败....')
+                            console.error('登录接口调用失败....')
                             console.error(data)
                             alert('登录接口调用失败....')
                         }
-                    }, 'json'
-                )
+                    }, 'json')
             })
             .catch((err) => {
-                console.log('发生错误....')
+                console.error('发生错误....')
                 console.error(err)
-                alert('发生错误: ' + username)
+                let msg = ''
+                if (err.responseText !== undefined) msg = err.responseText
+                if (err.message !== undefined) msg = err.message
+                alert('发生错误: ' + msg)
             })
     }
 
