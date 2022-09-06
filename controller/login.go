@@ -2,9 +2,11 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
+	"github.com/luguohuakai/north/srun"
 	"net/http"
 	"srun/cfg"
 	"srun/dao/mysql"
@@ -99,6 +101,19 @@ func LoginFinish(c *gin.Context) {
 		return
 	}
 	// If login was successful, handle next steps
-	// todo: 调用4k单点或无密码认证
-	success(c, returnNoData(http.StatusOK, "登录成功"))
+	// : 调用4k单点或无密码认证
+	sso, e := srun.Sso("", "", "", "", "", "login")
+	if e != nil {
+		fail(c, e)
+		return
+	} else {
+		res := srun.GetSsoSuccessOrError(*sso)
+		if res.IsSuccess {
+			success(c, returnNoData(http.StatusOK, res.Message))
+			return
+		} else {
+			fail(c, errors.New(res.Message))
+			return
+		}
+	}
 }

@@ -8,16 +8,22 @@ import (
 )
 
 func Init() (err error) {
-	viper.SetConfigName("app")
+	viper.SetConfigName("webauthn")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./etc/")
+	//viper.SetConfigFile("/srun3/bin/etc/prod/webauthn.yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("./etc/dev/")
+	viper.AddConfigPath("./etc/prod/")
+	viper.AddConfigPath("/srun3/etc/")
 	err = viper.ReadInConfig()
 	if err != nil {
 		return err
 	}
 	viper.WatchConfig()
 	viper.OnConfigChange(func(in fsnotify.Event) {})
+
+	fmt.Println(fmt.Sprintf("%s starting..., port: %d, mode: %s ....", viper.GetString("app.name"), viper.GetInt("app.port"), viper.GetString("app.mode")))
+
 	return
 }
 

@@ -23,7 +23,7 @@ func Init() (err error) {
 	if err != nil {
 		zap.L().Error(fmt.Sprintf("redis init error: %s", err.Error()))
 	} else {
-		fmt.Println("Init redis succeed....")
+		//fmt.Println("Init redis succeed....")
 		zap.L().Info(fmt.Sprintf("Redis【%s:%d】init finished....", viper.GetString("redis.ip"), viper.GetInt("redis.port")))
 	}
 

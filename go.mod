@@ -8,6 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/jinzhu/gorm v1.9.16
+	github.com/luguohuakai/north v0.0.0-20220906161101-16f5df9f58bd
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/spf13/viper v1.12.0
 	go.uber.org/zap v1.22.0
@@ -72,7 +73,7 @@ require (
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
@@ -102,7 +103,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	golang.org/x/tools v0.1.5 // indirect
@@ -120,6 +121,5 @@ require (
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.8.0
-	github.com/luguohuakai/north v0.0.0-20220830032947-57dc0feb9d08
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )

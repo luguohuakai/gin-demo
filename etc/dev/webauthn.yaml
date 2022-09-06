@@ -1,0 +1,27 @@
+app:
+  name: "webauthn"
+  mode: "dev"
+  protocol: "http"
+  host: "localhost"
+  port: 18080
+log:
+  level: "warn"
+  filename: "app.log"
+  max_size: 100
+  max_age: 30
+  max_backups: 7
+mysql:
+  ip: "127.0.0.1"
+  port: 3306
+  pwd: "Srun@4000"
+  user: "webauthn"
+  dbname: "webauthn"
+  max_life_time: 5
+  max_open: 100
+  max_idle: 50
+redis:
+  ip: "127.0.0.1"
+  port: 6379
+  pwd: "Srun@4000"
+  index: 0
+  pool_size: 100

@@ -3,6 +3,7 @@ package routes
 import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"srun/controller"
@@ -11,6 +12,10 @@ import (
 )
 
 func Setup() *gin.Engine {
+	if viper.GetString("app.mode") == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	r := gin.New()
 
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
