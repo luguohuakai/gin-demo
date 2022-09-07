@@ -10,6 +10,10 @@
 <br>
 <input type="text" id="username" placeholder="请输入用户名">
 <br>
+<label for="password">密码:</label>
+<br>
+<input type="text" id="password" placeholder="请输入密码">
+<br>
 <br>
 <button onclick="registerUser()">注册</button>
 <button onclick="loginUser()">登录</button>
@@ -36,6 +40,7 @@
 
     function registerUser() {
         let username = $('#username').val()
+        let password = $('#password').val()
         if (username === '') {
             alert('用户名必填')
             return
@@ -43,8 +48,8 @@
 
         $.post(
             '/register/begin?username=' + username,
-            // {"password": "123456"},
-            null,
+            {password},
+            // null,
             function (data) {
                 console.log("开始请求: /register/begin")
                 console.log("返回数据如下:")
