@@ -10,11 +10,11 @@ import (
 func Init() (err error) {
 	viper.SetConfigName("webauthn")
 	viper.SetConfigType("yaml")
-	//viper.SetConfigFile("/srun3/bin/etc/prod/webauthn.yaml")
+	viper.AddConfigPath("etc/dev")  // 先找dev 如果找到就不再找下面的配置了
+	viper.AddConfigPath("etc/prod") // 再找prod
+	viper.AddConfigPath("/srun3/etc")
+	viper.AddConfigPath("/srun3/bin/etc/prod") // 正式环境绝对路径
 	viper.AddConfigPath(".")
-	viper.AddConfigPath("./etc/dev/")
-	viper.AddConfigPath("./etc/prod/")
-	viper.AddConfigPath("/srun3/etc/")
 	err = viper.ReadInConfig()
 	if err != nil {
 		return err

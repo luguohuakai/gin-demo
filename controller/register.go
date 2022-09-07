@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"net/http"
 	"srun/cfg"
+	"srun/dao/mysql"
 	"srun/dao/redis"
 	"srun/model"
 	"time"
@@ -98,6 +99,11 @@ func Finish(c *gin.Context) {
 		return
 	}
 
+	err = mysql.GetDB().Model(&user).Update(model.User{Status: 2}).Error
+	if err != nil {
+		fail(c, err)
+		return
+	}
 	success(c, returnNoData(http.StatusOK, "注册成功")) // Handle next steps
 }
 
@@ -111,7 +117,9 @@ func UserExists(c *gin.Context) {
 	} else {
 		if gorm.IsRecordNotFoundError(err) {
 			fail(c, err, returnNoData(4001, "user not register"))
+			return
 		}
 		fail(c, err)
+		return
 	}
 }

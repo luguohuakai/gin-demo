@@ -1,6 +1,6 @@
 app:
   name: "webauthn"
-  mode: "dev"
+  mode: "prod"
   protocol: "http"
   host: "localhost"
   port: 18080

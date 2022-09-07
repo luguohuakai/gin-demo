@@ -5,13 +5,10 @@ SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
-CREATE DATABASE `webauthn` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `webauthn`;
-
 SET NAMES utf8mb4;
 
-DROP TABLE IF EXISTS `credential`;
-CREATE TABLE `credential` (
+DROP TABLE IF EXISTS `wa_credential`;
+CREATE TABLE `wa_credential` (
                               `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
                               `uid` int(10) unsigned NOT NULL COMMENT '用户ID',
                               `cid` varbinary(255) NOT NULL COMMENT '凭据ID',
@@ -21,11 +18,11 @@ CREATE TABLE `credential` (
                               `deleted_at` datetime DEFAULT NULL COMMENT '删除时间',
                               PRIMARY KEY (`id`),
                               UNIQUE KEY `uid_cid` (`uid`,`cid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='凭据表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='凭据表';
 
 
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
+DROP TABLE IF EXISTS `wa_user`;
+CREATE TABLE `wa_user` (
                         `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
                         `name` varchar(64) NOT NULL COMMENT '用户名',
                         `display_name` varchar(64) NOT NULL COMMENT '展示用户名',
@@ -35,7 +32,7 @@ CREATE TABLE `user` (
                         `status` tinyint(3) unsigned DEFAULT '1' COMMENT '1:未激活 2:注册完成',
                         PRIMARY KEY (`id`),
                         UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户表';
 
 
 -- 2022-09-05 06:09:08

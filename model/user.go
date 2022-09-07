@@ -14,7 +14,12 @@ type User struct {
 	gorm.Model
 	Name        string
 	DisplayName string
+	Status      uint8 // 1:未激活 2:注册完成
 	credentials []webauthn.Credential
+}
+
+func (User) TableName() string {
+	return "wa_user"
 }
 
 // WebAuthnID User ID according to the Relying on Party
@@ -56,12 +61,12 @@ func GetUser(username string, pwd ...string) (user User, err error) {
 				return User{}, errors.New(httpResult.Message)
 			}
 		}
-	}
-	if err = mysql.GetDB().First(&user, "name = ?", username).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			user.Name = username
-			user.DisplayName = strings.SplitN(username, "@", 2)[0]
-			err = mysql.GetDB().Create(&user).Error
+		if err = mysql.GetDB().First(&user, "name = ?", username).Error; err != nil {
+			if gorm.IsRecordNotFoundError(err) {
+				user.Name = username
+				user.DisplayName = strings.SplitN(username, "@", 2)[0]
+				err = mysql.GetDB().Create(&user).Error
+			}
 		}
 	}
 	if err == nil {
@@ -79,7 +84,7 @@ func GetUser(username string, pwd ...string) (user User, err error) {
 }
 
 func GetLoginUser(username string) (user User, err error) {
-	if err = mysql.GetDB().First(&user, "name = ?", username).Error; err == nil {
+	if err = mysql.GetDB().First(&user, "name = ? and status = ?", username, 2).Error; err == nil {
 		var c []Credential
 		if err = mysql.GetDB().Find(&c, "uid = ?", user.ID).Error; err == nil {
 			for _, v := range c {
@@ -95,7 +100,7 @@ func GetLoginUser(username string) (user User, err error) {
 // UserIsWebAuthn 验证用户是否已注册webauthn
 func UserIsWebAuthn(username string) (err error) {
 	var user User
-	return mysql.GetDB().Select("id").First(&user, "name = ?", username).Error
+	return mysql.GetDB().Select("id").First(&user, "name = ? and status = ?", username, 2).Error
 }
 
 // AddCredential associates the credential to the user

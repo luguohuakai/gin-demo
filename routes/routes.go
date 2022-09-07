@@ -2,6 +2,7 @@ package routes
 
 import (
 	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"log"
@@ -19,6 +20,8 @@ func Setup() *gin.Engine {
 	r := gin.New()
 
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
+
+	r.Use(cors.Default())
 
 	authMiddleware := logic.JWT()
 

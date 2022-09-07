@@ -15,6 +15,10 @@ type Credential struct {
 	Credential string `json:"credential"`
 }
 
+func (Credential) TableName() string {
+	return "wa_credential"
+}
+
 func (c Credential) AddCredential(uid uint, cred webauthn.Credential) error {
 	var one Credential
 	err := mysql.GetDB().First(&one, "uid = ? and cid = ?", uid, cred.ID).Error
