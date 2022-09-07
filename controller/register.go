@@ -17,7 +17,7 @@ import (
 )
 
 func Begin(c *gin.Context) {
-	user, err := model.GetUser(c.Query("username"), c.PostForm("password")) // Find or create the new user
+	user, err := model.GetUser(c.Query("username"), "begin", c.PostForm("password")) // Find or create the new user
 	if err != nil {
 		fail(c, err)
 		return
@@ -60,7 +60,7 @@ func Begin(c *gin.Context) {
 }
 
 func Finish(c *gin.Context) {
-	user, err := model.GetUser(c.Query("username")) // Get the user
+	user, err := model.GetUser(c.Query("username"), "finish") // Get the user
 	if err != nil {
 		fail(c, err)
 		return

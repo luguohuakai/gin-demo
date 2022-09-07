@@ -49,7 +49,12 @@ func (u User) WebAuthnCredentials() []webauthn.Credential {
 	return u.credentials
 }
 
-func GetUser(username string, pwd ...string) (user User, err error) {
+func GetUser(username, action string, pwd ...string) (user User, err error) {
+	if action == "begin" {
+		if len(pwd) != 1 || pwd[0] == "" {
+			return User{}, errors.New("password can not be empty")
+		}
+	}
 	if len(pwd) > 0 && pwd[0] != "" {
 		// : 跟北向接口交互 判断用户名/密码是否正确
 		var httpResult *srun.HttpResult
@@ -87,6 +92,9 @@ func GetLoginUser(username string) (user User, err error) {
 	if err = mysql.GetDB().First(&user, "name = ? and status = ?", username, 2).Error; err == nil {
 		var c []Credential
 		if err = mysql.GetDB().Find(&c, "uid = ?", user.ID).Error; err == nil {
+			if len(c) == 0 {
+				return User{}, errors.New("no credentials found, please register first")
+			}
 			for _, v := range c {
 				credential, _ := v.GetCredential()
 				user.credentials = append(user.credentials, credential)
