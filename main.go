@@ -61,8 +61,14 @@ func main() {
 	}
 
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			zap.L().Error(fmt.Sprintf("Listen error: %s", err.Error()))
+		if viper.GetString("app.protocol") == "https" {
+			if err := server.ListenAndServeTLS(viper.GetString("app.cert_file"), viper.GetString("app.key_file")); err != nil && err != http.ErrServerClosed {
+				zap.L().Error(fmt.Sprintf("Listen error: %s", err.Error()))
+			}
+		} else {
+			if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				zap.L().Error(fmt.Sprintf("Listen error: %s", err.Error()))
+			}
 		}
 	}()
 

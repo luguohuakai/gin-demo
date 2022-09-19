@@ -10,8 +10,9 @@ import (
 
 type Credential struct {
 	gorm.Model
-	Uid        uint   `json:"uid"`
-	Cid        []byte `json:"cid"`
+	Uid uint   `json:"uid"`
+	Cid []byte `json:"cid"`
+	//PublicKey  []byte `json:"public_key"`
 	Credential string `json:"credential"`
 }
 
@@ -22,14 +23,16 @@ func (Credential) TableName() string {
 func (c Credential) AddCredential(uid uint, cred webauthn.Credential) error {
 	var one Credential
 	err := mysql.GetDB().First(&one, "uid = ? and cid = ?", uid, cred.ID).Error
+	//err := mysql.GetDB().First(&one, "uid = ? ", uid).Error
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		return err
 	}
 	if err == nil {
-		return errors.New("record existed, can not add")
+		return errors.New("record existed, can not add again")
 	}
 	c.Uid = uid
 	c.Cid = cred.ID
+	//c.PublicKey = cred.PublicKey
 	marshal, err := json.Marshal(cred)
 	if err != nil {
 		return err

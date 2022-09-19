@@ -8,6 +8,8 @@ import (
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/luguohuakai/north/srun"
+	"github.com/spf13/viper"
 	"net/http"
 	"srun/cfg"
 	"srun/dao/mysql"
@@ -26,9 +28,18 @@ func Begin(c *gin.Context) {
 	// Updating the AuthenticatorSelection options.
 	// See the struct declarations for values
 	authSelect := protocol.AuthenticatorSelection{
-		AuthenticatorAttachment: protocol.Platform,                // platform：表示仅接受平台内置的、无法移除的认证器，如手机的指纹识别设备 cross-platform：表示仅接受外部认证器，如 USB Key
-		RequireResidentKey:      protocol.ResidentKeyUnrequired(), // 是否要求将私钥钥永久存储于认证器中 // 设置为true可实现无用户名登录
-		UserVerification:        protocol.VerificationDiscouraged, // 依赖方不关心用户验证
+		//AuthenticatorAttachment: protocol.Platform,                // platform：表示仅接受平台内置的、无法移除的认证器，如手机的指纹识别设备 cross-platform：表示仅接受外部认证器，如 USB Key (safari 可能会报错)
+		RequireResidentKey: protocol.ResidentKeyUnrequired(), // 是否要求将私钥钥永久存储于认证器中 // 设置为true可实现无用户名登录
+		UserVerification:   protocol.VerificationDiscouraged, // 依赖方不关心用户验证
+	}
+
+	// （可选）用于标识要排除的凭证，可以避免同一个用户多次注册同一个认证器。如果用户试图注册相同的认证器，用户代理会抛出 InvalidStateError 错误。数组中的每一项都是一个公钥凭证对象
+	var excludeList []protocol.CredentialDescriptor
+	for _, v := range user.WebAuthnCredentials() {
+		excludeList = append(excludeList, protocol.CredentialDescriptor{
+			Type:         "public-key",
+			CredentialID: v.ID,
+		})
 	}
 
 	// Updating the ConveyancePreference options.
@@ -42,7 +53,7 @@ func Begin(c *gin.Context) {
 	// Handle next steps
 
 	//options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithConveyancePreference(conveyancePref), webauthn.WithExtensions(extension))
-	options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect))
+	options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithExclusions(excludeList))
 	// handle errors if present
 	if err != nil {
 		fail(c, err)
@@ -85,6 +96,7 @@ func Finish(c *gin.Context) {
 		fail(c, err)
 		return
 	}
+	parsedResponse.Response.CollectedClientData.Origin = fmt.Sprintf("%s://%s:%d", viper.GetString("app.protocol"), viper.GetString("app.host"), viper.GetInt("app.port"))
 	credential, err := cfg.WAWeb.CreateCredential(&user, sessionData, parsedResponse)
 	// Handle validation or input errors
 	if err != nil {
@@ -104,7 +116,22 @@ func Finish(c *gin.Context) {
 		fail(c, err)
 		return
 	}
-	success(c, returnNoData(http.StatusOK, "注册成功")) // Handle next steps
+	// 直接调用登录
+	sso, e := srun.Sso(viper.GetString("sso.secret"), viper.GetString("sso.url"), c.Query("username"), c.Query("ip"), c.Query("ac_id"), "login")
+	if e != nil {
+		fail(c, errors.New("sso : "+e.Error()))
+		return
+	} else {
+		res := srun.GetSsoSuccessOrError(*sso)
+		if res.IsSuccess {
+			success(c, returnData(sso, http.StatusOK, res.Message))
+			return
+		} else {
+			fail(c, errors.New("sso - "+res.Message), returnData(sso, http.StatusOK))
+			return
+		}
+	}
+	//success(c, returnNoData(http.StatusOK, "注册成功")) // Handle next steps
 }
 
 func UserExists(c *gin.Context) {

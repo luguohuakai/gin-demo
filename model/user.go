@@ -57,14 +57,18 @@ func GetUser(username, action string, pwd ...string) (user User, err error) {
 	}
 	if len(pwd) > 0 && pwd[0] != "" {
 		// : 跟北向接口交互 判断用户名/密码是否正确
-		var httpResult *srun.HttpResult
-		httpResult, err = srun.Request("/api/v1/user/validate-users", "post", map[string]string{"user_name": username, "password": pwd[0]})
+		//var httpResult *srun.HttpResult
+		//httpResult, err = srun.Request("/api/v1/user/validate-users", "post", map[string]string{"user_name": username, "password": pwd[0]})
+		//if err != nil {
+		//	return User{}, errors.New("NORTH - " + err.Error())
+		//} else {
+		//	if httpResult.Code != 0 {
+		//		return User{}, errors.New("NORTH : " + httpResult.Message)
+		//	}
+		//}
+		err = srun.UserRight(map[string]string{"user_name": username, "password": srun.MD5(pwd[0])})
 		if err != nil {
-			return
-		} else {
-			if httpResult.Code != 0 {
-				return User{}, errors.New(httpResult.Message)
-			}
+			return User{}, errors.New("NORTH - " + err.Error())
 		}
 		if err = mysql.GetDB().First(&user, "name = ?", username).Error; err != nil {
 			if gorm.IsRecordNotFoundError(err) {
@@ -73,7 +77,11 @@ func GetUser(username, action string, pwd ...string) (user User, err error) {
 				err = mysql.GetDB().Create(&user).Error
 			}
 		}
+		//else {
+		//	return User{}, errors.New("user already exists")
+		//}
 	}
+	err = mysql.GetDB().First(&user, "name = ?", username).Error
 	if err == nil {
 		var c []Credential
 		err = mysql.GetDB().Find(&c, "uid = ?", user.ID).Error

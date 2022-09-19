@@ -14,6 +14,10 @@
 <br>
 <input type="text" id="password" placeholder="请输入密码">
 <br>
+<input type="text" id="ip" placeholder="请输入IP">
+<br>
+<input type="text" id="ac_id" placeholder="请输入ac_id">
+<br>
 <br>
 <button onclick="registerUser()">注册</button>
 <button onclick="loginUser()">登录</button>
@@ -135,6 +139,8 @@
 
     function loginUser() {
         let username = $('#username').val()
+        let ip = $('#ip').val()
+        let ac_id = $('#ac_id').val()
         if (username === '') {
             alert('用户名必填')
             return
@@ -170,7 +176,7 @@
                 console.log(assertion)
                 console.log('开始请求完成接口:')
                 $.post(
-                    '/login/finish?username=' + username,
+                    '/login/finish?username=' + username + '&ip=' + ip + '&ac_id=' + ac_id,
                     JSON.stringify({
                         id: assertion.id,
                         rawId: bufferEncode(assertion.rawId),

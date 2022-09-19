@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/jinzhu/gorm v1.9.16
-	github.com/luguohuakai/north v0.0.0-20220906161101-16f5df9f58bd
+	github.com/luguohuakai/north v0.0.0-20220908072722-34092a82ee7e
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/spf13/viper v1.12.0
 	go.uber.org/zap v1.22.0
@@ -58,6 +58,7 @@ require (
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/luguohuakai/srun v0.0.0-20220814095654-0987311f4e6f // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.12 // indirect

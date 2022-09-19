@@ -1,9 +1,11 @@
 app:
   name: "webauthn"
   mode: "prod"
-  protocol: "http"
-  host: "localhost"
+  protocol: "https"
+  host: "idp.srun.com"
   port: 18080
+  cert_file: "/srun3-bak0819/httpd/etc/ssl.key/server8080.crt"
+  key_file: "/srun3-bak0819/httpd/etc/ssl.key/server8080.key"
 log:
   level: "warn"
   filename: "webauthn.log"
@@ -25,3 +27,6 @@ redis:
   pwd: "srun_3000@redis"
   index: 0
   pool_size: 100
+sso:
+  url: "http://127.0.0.1"
+  secret: "123456"

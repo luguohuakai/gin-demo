@@ -3,10 +3,12 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
 	"github.com/luguohuakai/north/srun"
+	"github.com/spf13/viper"
 	"net/http"
 	"srun/cfg"
 	"srun/dao/mysql"
@@ -31,15 +33,15 @@ func LoginBegin(c *gin.Context) {
 		Type:         protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
 		Transport: []protocol.AuthenticatorTransport{
 			protocol.Internal,
-			protocol.USB,
-			protocol.NFC,
-			protocol.BLE,
+			//protocol.USB,
+			//protocol.NFC,
+			//protocol.BLE,
 		}, // 允许的认证器类型
 	}
 
 	// Handle next steps
 
-	options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithAllowedCredentials(allowList))
+	options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithAllowedCredentials(allowList), webauthn.WithUserVerification(protocol.VerificationDiscouraged))
 	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user)
 	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithUserVerification(protocol.VerificationPreferred))
 	// handle errors if present
@@ -83,6 +85,7 @@ func LoginFinish(c *gin.Context) {
 		fail(c, err)
 		return
 	}
+	parsedResponse.Response.CollectedClientData.Origin = fmt.Sprintf("%s://%s:%d", viper.GetString("app.protocol"), viper.GetString("app.host"), viper.GetInt("app.port"))
 	credential, err := cfg.WAWeb.ValidateLogin(&user, sessionData, parsedResponse)
 	// Handle validation or input errors
 	if err != nil {
@@ -101,18 +104,20 @@ func LoginFinish(c *gin.Context) {
 		return
 	}
 	// If login was successful, handle next steps
+	//success(c)
+	//return
 	// : 调用4k单点或无密码认证
-	sso, e := srun.Sso("", "", "", "", "", "login")
+	sso, e := srun.Sso(viper.GetString("sso.secret"), viper.GetString("sso.url"), c.Query("username"), c.Query("ip"), c.Query("ac_id"), "login")
 	if e != nil {
-		fail(c, e)
+		fail(c, errors.New("sso : "+e.Error()))
 		return
 	} else {
 		res := srun.GetSsoSuccessOrError(*sso)
 		if res.IsSuccess {
-			success(c, returnNoData(http.StatusOK, res.Message))
+			success(c, returnData(sso, http.StatusOK, res.Message))
 			return
 		} else {
-			fail(c, errors.New(res.Message))
+			fail(c, errors.New("sso - "+res.Message), returnData(sso, http.StatusOK))
 			return
 		}
 	}
