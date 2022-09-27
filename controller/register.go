@@ -28,7 +28,7 @@ func Begin(c *gin.Context) {
 	// Updating the AuthenticatorSelection options.
 	// See the struct declarations for values
 	authSelect := protocol.AuthenticatorSelection{
-		//AuthenticatorAttachment: protocol.Platform,                // platform：表示仅接受平台内置的、无法移除的认证器，如手机的指纹识别设备 cross-platform：表示仅接受外部认证器，如 USB Key (safari 可能会报错)
+		//AuthenticatorAttachment: protocol.CrossPlatform,           // platform：表示仅接受平台内置的、无法移除的认证器，如手机的指纹识别设备 cross-platform：表示仅接受外部认证器，如 USB Key (safari 可能会报错)
 		RequireResidentKey: protocol.ResidentKeyUnrequired(), // 是否要求将私钥钥永久存储于认证器中 // 设置为true可实现无用户名登录
 		UserVerification:   protocol.VerificationDiscouraged, // 依赖方不关心用户验证
 	}
@@ -127,7 +127,7 @@ func Finish(c *gin.Context) {
 			success(c, returnData(sso, http.StatusOK, res.Message))
 			return
 		} else {
-			fail(c, errors.New("sso - "+res.Message), returnData(sso, http.StatusOK))
+			fail(c, errors.New("sso - "+res.Message), returnData(sso, http.StatusBadRequest))
 			return
 		}
 	}

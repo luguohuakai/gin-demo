@@ -27,16 +27,19 @@ func LoginBegin(c *gin.Context) {
 	// Updating the AuthenticatorSelection options.
 	// See the struct declarations for values
 	allowList := make([]protocol.CredentialDescriptor, 1)
-	allowList[0] = protocol.CredentialDescriptor{
-		//CredentialID: credentialToAllowID, // 允许认证的凭据ID
-		CredentialID: user.WebAuthnCredentials()[0].ID, // 允许认证的凭据ID
-		Type:         protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
-		Transport: []protocol.AuthenticatorTransport{
-			protocol.Internal,
-			//protocol.USB,
-			//protocol.NFC,
-			//protocol.BLE,
-		}, // 允许的认证器类型
+	webAuthnCredentials := user.WebAuthnCredentials()
+	for k, v := range webAuthnCredentials {
+		allowList[k] = protocol.CredentialDescriptor{
+			//CredentialID: credentialToAllowID, // 允许认证的凭据ID
+			CredentialID: v.ID,                             // 允许认证的凭据ID
+			Type:         protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
+			Transport: []protocol.AuthenticatorTransport{
+				protocol.USB,
+				protocol.Internal,
+				protocol.NFC,
+				protocol.BLE,
+			}, // 允许的认证器类型
+		}
 	}
 
 	// Handle next steps
