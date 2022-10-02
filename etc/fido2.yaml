@@ -1,0 +1,21 @@
+login:
+    allow_credentials:
+        transports:
+            - usb
+            - nfc
+            - ble
+            - internal
+    timeout: 6000
+    user_verification: preferred
+register:
+    attestation: none
+    authenticator_selection:
+        authenticator_attachment: ""
+        require_resident_key: false
+        user_verification: preferred
+    exclude_credentials:
+        transports:
+            - usb
+            - internl
+            - ble
+    timeout: 6000

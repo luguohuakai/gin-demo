@@ -53,6 +53,14 @@ func main() {
 		zap.L().Error(fmt.Sprintf("Init webauthn error: %s", err.Error()))
 	}
 
+	if err := cfg.InitFido2(); err != nil {
+		fmt.Println(fmt.Sprintf("Init fido2 error: %s", err.Error()))
+		zap.L().Error(fmt.Sprintf("Init fido2 error: %s", err.Error()))
+	}
+
+	cfg.InitValidator()
+	cfg.InitLang()
+
 	r := routes.Setup()
 
 	server := &http.Server{

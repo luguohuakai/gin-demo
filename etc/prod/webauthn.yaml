@@ -6,6 +6,7 @@ app:
   port: 18080
   cert_file: "/srun3-bak0819/httpd/etc/ssl.key/server8080.crt"
   key_file: "/srun3-bak0819/httpd/etc/ssl.key/server8080.key"
+  lang: zh
 log:
   level: "warn"
   filename: "webauthn.log"

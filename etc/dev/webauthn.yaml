@@ -4,6 +4,7 @@ app:
   protocol: "http"
   host: "localhost"
   port: 18080
+  lang: zh
 log:
   level: "warn"
   filename: "app.log"

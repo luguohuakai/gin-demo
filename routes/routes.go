@@ -2,6 +2,8 @@ package routes
 
 import (
 	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth/limiter"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -10,6 +12,7 @@ import (
 	"srun/controller"
 	"srun/logger"
 	"srun/logic"
+	"time"
 )
 
 func Setup() *gin.Engine {
@@ -18,6 +21,15 @@ func Setup() *gin.Engine {
 	}
 
 	r := gin.New()
+
+	// GetLimiters 限制GET请求次数
+	GET := tollbooth.NewLimiter(100, &limiter.ExpirableOptions{
+		ExpireJobInterval: time.Second,
+	})
+	// POSTLimiters 限制POST请求次数
+	POST := tollbooth.NewLimiter(100, &limiter.ExpirableOptions{
+		ExpireJobInterval: time.Second,
+	})
 
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 
@@ -40,15 +52,18 @@ func Setup() *gin.Engine {
 
 	r.GET("/demo", controller.Demo)
 
-	r.POST("/register/begin", controller.Begin)
+	r.POST("/register/begin", controller.Limit(POST), controller.Begin)
 	r.POST("/register/finish", controller.Finish)
-	r.GET("/register/user-exists", controller.UserExists)
+	r.GET("/register/user-exists", controller.Limit(GET), controller.UserExists)
 	r.GET("/login/begin", controller.LoginBegin)
 	r.POST("/login/finish", controller.LoginFinish)
 
 	r.GET("/admin/login", authMiddleware.LoginHandler)
 
 	admin := r.Group("admin")
+	admin.GET("/test", controller.Test)
+	admin.GET("/all-cfg", controller.AllCfg)
+	admin.POST("/set-login-trans", controller.SetLoginTransports)
 	admin.Use(authMiddleware.MiddlewareFunc())
 
 	admin.GET("/refresh_token", authMiddleware.RefreshHandler)

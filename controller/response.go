@@ -2,7 +2,9 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
+	"srun/cfg"
 )
 
 var version = "1.0.0"
@@ -92,6 +94,14 @@ func list(c *gin.Context, data interface{}, total int) {
 }
 
 func fail(c *gin.Context, err error, data ...interface{}) {
+	if errs, ok := err.(validator.ValidationErrors); ok {
+		if len(data) < 1 {
+			res := returnData(errs.Translate(cfg.Trans), http.StatusBadRequest)
+			res.Error = err.Error()
+			c.JSON(http.StatusOK, res)
+			return
+		}
+	}
 	if err != nil {
 		if len(data) < 1 {
 			res := returnNoData(http.StatusBadRequest, err.Error())
