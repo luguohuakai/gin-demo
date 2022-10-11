@@ -10,12 +10,49 @@ import (
 	"strings"
 )
 
+type QueryUser struct {
+	Name   string `json:"name,omitempty"`
+	Status uint8  `json:"status,omitempty"`
+	Page   int    `json:"page,omitempty"`
+	Size   int    `json:"size,omitempty"`
+}
+
+func (u QueryUser) GetUserLst() (lst []UserLst, total int, err error) {
+	if u.Page == 0 {
+		u.Page = 1
+	}
+	if u.Size == 0 {
+		u.Size = 20
+	}
+	db := mysql.GetDB().Model(User{})
+	if u.Name != "" {
+		db = db.Where("name like %?%", u.Name)
+	}
+	if u.Status != 0 {
+		db = db.Where("status = ?", u.Status)
+	}
+	if err = db.Count(&total).Error; err != nil {
+		return
+	}
+	err = db.Order("id DESC").Offset((u.Page - 1) * u.Size).Limit(u.Size).Find(&lst).Error
+
+	return
+}
+
 type User struct {
 	gorm.Model
 	Name        string
 	DisplayName string
 	Status      uint8 // 1:未激活 2:注册完成
 	credentials []webauthn.Credential
+}
+
+type UserLst struct {
+	Id          uint
+	CreatedAt   uint
+	Name        string
+	DisplayName string
+	Status      uint8
 }
 
 func (User) TableName() string {

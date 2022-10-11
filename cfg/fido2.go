@@ -9,9 +9,9 @@ var VP *viper.Viper
 var FD *Fido2
 
 type AuthenticatorSelection struct {
-	AuthenticatorAttachment string `json:"authenticator_attachment"`
-	UserVerification        string `json:"user_verification"`
-	RequireResidentKey      bool   `json:"require_resident_key"`
+	AuthenticatorAttachment string `json:"authenticator_attachment,omitempty" binding:"oneof=null platform cross-platform ''"`
+	UserVerification        string `json:"user_verification,omitempty" binding:"oneof=required preferred discouraged ''"`
+	RequireResidentKey      bool   `json:"require_resident_key,omitempty" binding:"oneof=true false ''"`
 }
 
 type ExcludeCredentials struct {
@@ -21,14 +21,14 @@ type ExcludeCredentials struct {
 type Transports []string
 
 type Register struct {
-	AuthenticatorSelection AuthenticatorSelection `json:"authenticator_selection"`
-	ExcludeCredentials     ExcludeCredentials     `json:"exclude_credentials"`
-	Timeout                uint                   `json:"timeout"`
-	Attestation            string                 `json:"attestation"`
+	AuthenticatorSelection AuthenticatorSelection `json:"authenticator_selection,omitempty"`
+	ExcludeCredentials     ExcludeCredentials     `json:"exclude_credentials,omitempty"`
+	Timeout                uint                   `json:"timeout,omitempty"`
+	Attestation            string                 `json:"attestation,omitempty" binging:"oneof=none indirect direct ''"`
 }
 
 type Login struct {
-	UserVerification   string             `json:"user_verification"`
+	UserVerification   string             `json:"user_verification,omitempty" binding:"oneof=required preferred discouraged ''"`
 	ExcludeCredentials ExcludeCredentials `json:"exclude_credentials"`
 	Timeout            uint               `json:"timeout"`
 }
