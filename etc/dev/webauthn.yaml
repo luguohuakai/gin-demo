@@ -1,28 +1,31 @@
 app:
-  name: "webauthn"
-  mode: "dev"
-  protocol: "http"
-  host: "localhost"
-  port: 18080
-  lang: zh
+    host: localhost
+    lang: zh
+    mode: dev
+    name: webauthn
+    port: 18080
+    protocol: http
 log:
-  level: "warn"
-  filename: "app.log"
-  max_size: 100
-  max_age: 30
-  max_backups: 7
+    filename: app.log
+    level: warn
+    max_age: 30
+    max_backups: 7
+    max_size: 100
 mysql:
-  ip: "127.0.0.1"
-  port: 3306
-  pwd: "Srun@4000"
-  user: "webauthn"
-  dbname: "webauthn"
-  max_life_time: 5
-  max_open: 100
-  max_idle: 50
+    dbname: webauthn
+    ip: 127.0.0.1
+    max_idle: 50
+    max_life_time: 5
+    max_open: 100
+    port: 3306
+    pwd: Srun@4000
+    user: webauthn
 redis:
-  ip: "127.0.0.1"
-  port: 6379
-  pwd: "Srun@4000"
-  index: 0
-  pool_size: 100
+    index: 0
+    ip: 127.0.0.1
+    pool_size: 100
+    port: 6379
+    pwd: Srun@4000
+sso:
+    url: http://127.0.0.12
+    secret: "123455"

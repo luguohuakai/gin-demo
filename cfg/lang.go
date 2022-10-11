@@ -61,12 +61,12 @@ func InitLang() {
 		}
 
 		// 添加额外翻译
-		_ = v.RegisterTranslation("required_with", Trans, func(ut ut.Translator) error {
-			return ut.Add("required_with", "{0} 为必填字段!", true)
-		}, func(ut ut.Translator, fe validator.FieldError) string {
-			t, _ := ut.T("required_with", fe.Field())
-			return t
-		})
+		//_ = v.RegisterTranslation("required_with", Trans, func(ut ut.Translator) error {
+		//	return ut.Add("required_with", "{0} 为必填字段!", true)
+		//}, func(ut ut.Translator, fe validator.FieldError) string {
+		//	t, _ := ut.T("required_with", fe.Field())
+		//	return t
+		//})
 
 		// 注册翻译器
 		var err error

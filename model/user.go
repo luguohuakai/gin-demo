@@ -24,7 +24,7 @@ func (u QueryUser) GetUserLst() (lst []UserLst, total int, err error) {
 	if u.Size == 0 {
 		u.Size = 20
 	}
-	db := mysql.GetDB().Model(User{})
+	db := mysql.GetDB().Model(&User{})
 	if u.Name != "" {
 		db = db.Where("name like %?%", u.Name)
 	}
@@ -49,13 +49,17 @@ type User struct {
 
 type UserLst struct {
 	Id          uint
-	CreatedAt   uint
+	CreatedAt   Date
 	Name        string
 	DisplayName string
 	Status      uint8
 }
 
 func (User) TableName() string {
+	return "wa_user"
+}
+
+func (*UserLst) TableName() string {
 	return "wa_user"
 }
 

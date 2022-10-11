@@ -11,26 +11,24 @@ var FD *Fido2
 type AuthenticatorSelection struct {
 	AuthenticatorAttachment string `json:"authenticator_attachment,omitempty" binding:"oneof=null platform cross-platform ''"`
 	UserVerification        string `json:"user_verification,omitempty" binding:"oneof=required preferred discouraged ''"`
-	RequireResidentKey      bool   `json:"require_resident_key,omitempty" binding:"oneof=true false ''"`
+	RequireResidentKey      string `json:"require_resident_key,omitempty" binding:"oneof=true false ''"`
 }
 
 type ExcludeCredentials struct {
-	Transports Transports `json:"transports" binding:"required,inArray=usb nfc internal ble"`
+	Transports []string `json:"transports,omitempty" binding:"inArray=usb nfc internal ble ''"`
 }
 
-type Transports []string
-
 type Register struct {
-	AuthenticatorSelection AuthenticatorSelection `json:"authenticator_selection,omitempty"`
-	ExcludeCredentials     ExcludeCredentials     `json:"exclude_credentials,omitempty"`
-	Timeout                uint                   `json:"timeout,omitempty"`
-	Attestation            string                 `json:"attestation,omitempty" binging:"oneof=none indirect direct ''"`
+	AuthenticatorSelection
+	ExcludeCredentials
+	Timeout     uint   `json:"timeout,omitempty"`
+	Attestation string `json:"attestation,omitempty" binding:"oneof=none indirect direct ''"`
 }
 
 type Login struct {
-	UserVerification   string             `json:"user_verification,omitempty" binding:"oneof=required preferred discouraged ''"`
-	ExcludeCredentials ExcludeCredentials `json:"exclude_credentials"`
-	Timeout            uint               `json:"timeout"`
+	ExcludeCredentials
+	UserVerification string `json:"user_verification,omitempty" binding:"oneof=required preferred discouraged ''"`
+	Timeout          uint   `json:"timeout,omitempty"`
 }
 
 type Fido2 struct {

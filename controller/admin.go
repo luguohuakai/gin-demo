@@ -39,7 +39,7 @@ func HelloHandler(c *gin.Context) {
 
 // AllCfg 获取全部配置
 func AllCfg(c *gin.Context) {
-	success(c, cfg.FD)
+	success(c, cfg.VP.AllSettings())
 }
 
 // SetLoginTransports 设置transports (usb nfc ble internal)
@@ -231,10 +231,17 @@ func EditSso(c *gin.Context) {
 
 // GetNorth 获取北向接口配置
 func GetNorth(c *gin.Context) {
-	file := "/etc/northbound.conf"
+	file := "/etc/northbound.ini"
 	vp := viper.New()
 	vp.SetConfigFile(file)
+	vp.SetConfigName("northbound.ini")
 	vp.SetConfigType("ini")
+	vp.AddConfigPath("etc")
+	err := vp.ReadInConfig()
+	if err != nil {
+		fail(c, err)
+		return
+	}
 	success(c, vp.AllSettings())
 }
 
@@ -253,10 +260,17 @@ func EditNorth(c *gin.Context) {
 		return
 	}
 
-	file := "/etc/northbound.conf"
+	file := "/etc/northbound.ini"
 	vp := viper.New()
 	vp.SetConfigFile(file)
+	vp.SetConfigName("northbound.ini")
 	vp.SetConfigType("ini")
+	vp.AddConfigPath("etc")
+	err = vp.ReadInConfig()
+	if err != nil {
+		fail(c, err)
+		return
+	}
 
 	if n.Protocol != "" {
 		vp.Set("protocol", n.Protocol)
