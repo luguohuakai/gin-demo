@@ -32,7 +32,7 @@ func HelloHandler(c *gin.Context) {
 	user, _ := c.Get(logic.IdentityKey)
 	c.JSON(200, gin.H{
 		"userID":   claims[logic.IdentityKey],
-		"userName": user.(*logic.User).UserName,
+		"userName": user.(*model.Admin).Username,
 		"text":     "Hello World.",
 	})
 }
@@ -288,3 +288,62 @@ func EditNorth(c *gin.Context) {
 	}
 	success(c)
 }
+
+// Active 激活license
+func Active(c *gin.Context) {
+	var err error
+	var as logic.AuthServer
+	err = c.ShouldBindJSON(&as)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+
+	var a logic.Auth
+	err, a = logic.ParseLicense(as.License)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+
+	viper.Set("auth.days", a.Days)
+	viper.Set("auth.name", a.Name)
+	viper.Set("auth.project", a.Project)
+	viper.Set("auth.apply_time", a.ApplyTime)
+	viper.Set("auth_server.license", as.License)
+	err = viper.WriteConfig()
+	if err != nil {
+		fail(c, err)
+		return
+	}
+
+	success(c)
+}
+
+// LicenseStatus 查询软件授权状态
+func LicenseStatus(c *gin.Context) {
+	err := logic.CheckLicense()
+	if err != nil {
+		fail(c, err)
+		return
+	}
+
+	success(c)
+}
+
+// GetLicense 查询当前license
+func GetLicense(c *gin.Context) {
+	type auth struct {
+		Auth logic.Auth `json:"auth" mapstructure:"auth"`
+	}
+	var a auth
+	err := viper.Unmarshal(&a)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	success(c, a.Auth)
+}
+
+// todo: 检查北向接口
+// todo: 检查sso接口

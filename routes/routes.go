@@ -37,28 +37,34 @@ func Setup() *gin.Engine {
 
 	authMiddleware := logic.JWT()
 
+	// todo: license 检查中间件
+
 	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
 		log.Printf("NoRoute claims: %#v\n", claims)
 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
 
-	r.StaticFile("/", "index.html")
-	r.Static("/js", "js")
+	r.StaticFile("/", "/srun3/www/webauthn/index.html")
+	r.Static("/js", "/srun3/www/webauthn/js")
+	r.Static("/css", "/srun3/www/webauthn/css")
+	r.Static("/image", "/srun3/www/webauthn/image")
+	r.Static("/assets", "/srun3/www/webauthn/assets")
+	r.Static("/icons", "/srun3/www/webauthn/icons")
 
-	r.GET("/ping", func(c *gin.Context) {
+	r.GET("/ping", logic.CheckLicenseMiddleware, func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
 
 	r.GET("/demo", controller.Demo)
 
-	r.POST("/register/begin", controller.Limit(POST), controller.Begin)
+	r.POST("/register/begin", logic.CheckLicenseMiddleware, controller.Limit(POST), controller.Begin)
 	r.POST("/register/finish", controller.Finish)
 	r.GET("/register/user-exists", controller.Limit(GET), controller.UserExists)
-	r.GET("/login/begin", controller.LoginBegin)
+	r.GET("/login/begin", logic.CheckLicenseMiddleware, controller.LoginBegin)
 	r.POST("/login/finish", controller.LoginFinish)
 
-	r.GET("/admin/login", authMiddleware.LoginHandler)
+	r.POST("/admin/login", authMiddleware.LoginHandler)
 
 	admin := r.Group("admin")
 	admin.GET("/test", controller.Test)
@@ -70,12 +76,15 @@ func Setup() *gin.Engine {
 	admin.POST("/set-require-resident-key", controller.SetRequireResidentKey)
 	admin.POST("/set-user-verification", controller.SetUserVerification)
 	admin.GET("/get-user", controller.GetUser)
-	admin.DELETE("/del-user", controller.DelUser)
-	admin.DELETE("/batch-del-user", controller.BatchDelUser)
+	admin.DELETE("/del-user", logic.CheckLicenseMiddleware, controller.DelUser)
+	admin.DELETE("/batch-del-user", logic.CheckLicenseMiddleware, controller.BatchDelUser)
 	admin.GET("/get-sso", controller.GetSso)
 	admin.POST("/edit-sso", controller.EditSso)
 	admin.GET("/get-north", controller.GetNorth)
 	admin.POST("/edit-north", controller.EditNorth)
+	admin.POST("/active", controller.Limit(POST), controller.Active)
+	admin.GET("/license-status", controller.LicenseStatus)
+	admin.GET("/get-license", controller.GetLicense)
 	admin.Use(authMiddleware.MiddlewareFunc())
 
 	admin.GET("/refresh_token", authMiddleware.RefreshHandler)

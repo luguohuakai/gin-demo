@@ -46,3 +46,38 @@ CREATE TABLE `wa_user`
 
 # ALTER TABLE `wa_credential`
 #     ADD `public_key` varbinary(1024) NOT NULL COMMENT '公钥' AFTER `cid`;
+
+CREATE TABLE `wa_admin`
+(
+    `id`         int unsigned     NOT NULL COMMENT 'ID' AUTO_INCREMENT PRIMARY KEY,
+    `username`   char(20)         NOT NULL COMMENT '账号',
+    `password`   varchar(255)     NOT NULL COMMENT '密码',
+    `avatar`     varchar(255)     NOT NULL DEFAULT '' COMMENT '头像',
+    `created_at` datetime         NOT NULL COMMENT '创建时间',
+    `updated_at` datetime         NOT NULL COMMENT '更新时间',
+    `deleted_at` datetime         NULL COMMENT '删除时间',
+    `status`     tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态 1:正常 2:禁用 3:正常+webauthn'
+) COMMENT ='管理员表' ENGINE = 'InnoDB'
+                  COLLATE 'utf8mb4_general_ci';
+
+
+INSERT INTO `wa_admin` (`username`, `password`, `avatar`, `created_at`, `updated_at`, `deleted_at`, `status`)
+VALUES ('srun', sha1('Srun@4000'), '', now(), now(), NULL, '1');
+
+CREATE TABLE `wa_admin_credential`
+(
+    `id`         int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `uid`        int(10) unsigned NOT NULL COMMENT '管理员ID',
+    `cid`        varbinary(255)   NOT NULL COMMENT '凭据ID',
+    `credential` text             NOT NULL COMMENT '凭据内容',
+    `created_at` datetime         NOT NULL COMMENT '创建时间',
+    `updated_at` datetime         NOT NULL COMMENT '更新时间',
+    `deleted_at` datetime DEFAULT NULL COMMENT '删除时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uid_cid` (`uid`, `cid`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT ='管理员凭据表';
+
+ALTER TABLE `wa_admin`
+    ADD UNIQUE `username` (`username`);

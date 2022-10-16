@@ -1,9 +1,13 @@
 package logic
 
 import (
+	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"log"
+	"srun/dao/mysql"
+	"srun/model"
 	"time"
 )
 
@@ -13,13 +17,7 @@ type login struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-var IdentityKey = "id"
-
-// User model
-// todo: 与数据库中的用户模型绑定
-type User struct {
-	UserName string
-}
+var IdentityKey = "username"
 
 func JWT() *jwt.GinJWTMiddleware {
 	// the jwt middleware
@@ -30,40 +28,46 @@ func JWT() *jwt.GinJWTMiddleware {
 		MaxRefresh:  time.Hour,
 		IdentityKey: IdentityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*User); ok {
+			if v, ok := data.(*model.Admin); ok {
 				return jwt.MapClaims{
-					IdentityKey: v.UserName,
+					IdentityKey: v.Username,
 				}
 			}
 			return jwt.MapClaims{}
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			return &User{
-				UserName: claims[IdentityKey].(string),
+			//fmt.Println(fmt.Sprintf("%#v", claims))
+			if v, ok := claims[IdentityKey].(string); ok {
+				return &model.Admin{
+					Username: v,
+				}
+			} else {
+				fmt.Println("token error")
+				zap.L().Error("token error")
+				return nil
 			}
 		},
 		// 验证器 用户身份验证
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var loginVal login
-			if err := c.ShouldBind(&loginVal); err != nil {
+			var data login
+			if err := c.ShouldBindJSON(&data); err != nil {
 				return "", jwt.ErrMissingLoginValues
 			}
-			userID := loginVal.Username
-			password := loginVal.Password
-
-			// todo: 校验数据库中的账密
-			if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
-				return &User{
-					UserName: userID,
-				}, nil
+			// : 校验数据库中的账密
+			var admin model.Admin
+			if err := mysql.GetDB().First(&admin, "username = ?", data.Username).Error; err != nil {
+				return nil, err
+			}
+			if SHA1(data.Password) == admin.Password {
+				return &admin, nil
 			}
 
 			return nil, jwt.ErrFailedAuthentication
 		},
 		// 配置授权人 仅在身份验证成功后调用
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*User); ok && v.UserName == "admin" {
+			if _, ok := data.(*model.Admin); ok {
 				return true
 			}
 

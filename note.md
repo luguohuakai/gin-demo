@@ -11,16 +11,14 @@ go build -o webauthn
 #### 启动
 
 ```shell
-cd /srun3/bin
-nohup ./webauthn &
+cd /srun3/bin;nohup ./webauthn &
 
 ```
 
 #### 关闭
 
 ```shell
-ps -ef | grep webauthn
-killall webauthn
+ps -ef | grep webauthn;killall webauthn
 
 ```
 
