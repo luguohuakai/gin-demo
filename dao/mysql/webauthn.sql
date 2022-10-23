@@ -7,7 +7,6 @@ SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
 SET NAMES utf8mb4;
 
-DROP TABLE IF EXISTS `wa_credential`;
 CREATE TABLE `wa_credential`
 (
     `id`         int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -24,7 +23,6 @@ CREATE TABLE `wa_credential`
   COLLATE = utf8mb4_general_ci COMMENT ='凭据表';
 
 
-DROP TABLE IF EXISTS `wa_user`;
 CREATE TABLE `wa_user`
 (
     `id`           int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -81,3 +79,25 @@ CREATE TABLE `wa_admin_credential`
 
 ALTER TABLE `wa_admin`
     ADD UNIQUE `username` (`username`);
+
+CREATE TABLE `wa_app`
+(
+    `id`         int(10) unsigned                        NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `app_id`     char(20) COLLATE utf8mb4_general_ci     NOT NULL COMMENT 'APP ID',
+    `app_secret` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '密钥',
+    `status`     tinyint(3) unsigned                     NOT NULL DEFAULT '1' COMMENT '1:正常 2:禁用',
+    `created_at` datetime                                NOT NULL COMMENT '创建时间',
+    `updated_at` datetime                                NOT NULL COMMENT '更新时间',
+    `deleted_at` datetime                                         DEFAULT NULL COMMENT '删除时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `app_id` (`app_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='APP表';
+
+ALTER TABLE `wa_user`
+    ADD `aid` int(10) unsigned NOT NULL COMMENT 'wa_app表对应ID' AFTER `id`;
+
+ALTER TABLE `wa_user`
+    ADD UNIQUE `aid_name` (`aid`, `name`),
+    DROP INDEX `name`;

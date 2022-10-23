@@ -13,7 +13,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/jinzhu/gorm v1.9.16
-	github.com/luguohuakai/north v0.0.0-20220926042854-82337b76045c
+	github.com/luguohuakai/north v0.0.0-20221018081614-26bd41a53b7a
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/spf13/viper v1.12.0
 	go.uber.org/zap v1.22.0

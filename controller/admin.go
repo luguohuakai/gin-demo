@@ -347,3 +347,7 @@ func GetLicense(c *gin.Context) {
 
 // todo: 检查北向接口
 // todo: 检查sso接口
+
+// 后台生成app_id app_secret
+
+// 使用app_id和app_secret获取token

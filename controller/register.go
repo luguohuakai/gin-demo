@@ -39,6 +39,12 @@ func Begin(c *gin.Context) {
 		excludeList = append(excludeList, protocol.CredentialDescriptor{
 			Type:         "public-key",
 			CredentialID: v.ID,
+			Transport: []protocol.AuthenticatorTransport{
+				protocol.USB,
+				protocol.Internal,
+				protocol.NFC,
+				protocol.BLE,
+			},
 		})
 	}
 

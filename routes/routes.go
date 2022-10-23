@@ -46,6 +46,7 @@ func Setup() *gin.Engine {
 	})
 
 	r.StaticFile("/", "/srun3/www/webauthn/index.html")
+	r.StaticFile("/index2.html", "/srun3/www/webauthn/index2.html")
 	r.Static("/js", "/srun3/www/webauthn/js")
 	r.Static("/css", "/srun3/www/webauthn/css")
 	r.Static("/image", "/srun3/www/webauthn/image")
