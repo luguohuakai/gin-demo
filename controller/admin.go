@@ -4,6 +4,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"net/http"
 	"srun/cfg"
 	"srun/dao/mysql"
 	"srun/logic"
@@ -324,11 +325,11 @@ func Active(c *gin.Context) {
 func LicenseStatus(c *gin.Context) {
 	err := logic.CheckLicense()
 	if err != nil {
-		fail(c, err)
+		fail(c, err, returnData(viper.GetString("auth.num"), http.StatusUnauthorized))
 		return
 	}
 
-	success(c)
+	success(c, returnNoData(http.StatusOK, "已授权"))
 }
 
 // GetLicense 查询当前license

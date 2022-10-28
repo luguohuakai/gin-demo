@@ -20,7 +20,9 @@ func Init() (err error) {
 		return err
 	}
 	viper.WatchConfig()
-	viper.OnConfigChange(func(in fsnotify.Event) {})
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		_ = viper.ReadInConfig()
+	})
 
 	fmt.Println(fmt.Sprintf("%s starting..., port: %d, mode: %s ....", viper.GetString("app.name"), viper.GetInt("app.port"), viper.GetString("app.mode")))
 

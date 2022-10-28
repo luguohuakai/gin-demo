@@ -282,7 +282,7 @@ func ParseLicense(license string) (err error, a Auth) {
 		return errors.New("license expired, please reauthorize"), a
 	}
 
-	// todo: 有网络时尝试联网检查
+	// todo: 有网络时尝试联网检查 当前license是否被取消 状态是否正常等等
 
 	return
 }
