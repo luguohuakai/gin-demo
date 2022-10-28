@@ -19,35 +19,80 @@ import (
 )
 
 func Begin(c *gin.Context) {
-	user, err := model.GetUser(c.Query("username"), "begin", c.PostForm("password")) // Find or create the new user
+	var err error
+	var user model.User
+	user, err = model.GetUser(c.Query("username"), "begin", c.PostForm("password")) // Find or create the new user
 	if err != nil {
 		fail(c, err)
 		return
 	}
 
+	var opts []webauthn.RegistrationOption
+
+	var authSelect protocol.AuthenticatorSelection
+	var flag bool
+	if cfg.FD.Register.AuthenticatorSelection.AuthenticatorAttachment != "" {
+		flag = true
+		authSelect.AuthenticatorAttachment = cfg.FD.Register.AuthenticatorSelection.AuthenticatorAttachment
+	}
+	if cfg.FD.Register.AuthenticatorSelection.RequireResidentKey != "" {
+		flag = true
+		if cfg.FD.Register.AuthenticatorSelection.RequireResidentKey == "true" {
+			authSelect.RequireResidentKey = protocol.ResidentKeyRequired()
+		} else {
+			authSelect.RequireResidentKey = protocol.ResidentKeyUnrequired()
+		}
+	}
+	if cfg.FD.Register.AuthenticatorSelection.UserVerification != "" {
+		flag = true
+		authSelect.UserVerification = cfg.FD.Register.AuthenticatorSelection.UserVerification
+	}
+	if flag {
+		opts = append(opts, webauthn.WithAuthenticatorSelection(authSelect))
+	}
 	// Updating the AuthenticatorSelection options.
 	// See the struct declarations for values
-	authSelect := protocol.AuthenticatorSelection{
-		//AuthenticatorAttachment: protocol.CrossPlatform,           // platform：表示仅接受平台内置的、无法移除的认证器，如手机的指纹识别设备 cross-platform：表示仅接受外部认证器，如 USB Key (safari 可能会报错)
-		RequireResidentKey: protocol.ResidentKeyUnrequired(), // 是否要求将私钥钥永久存储于认证器中 // 设置为true可实现无用户名登录
-		UserVerification:   protocol.VerificationDiscouraged, // 依赖方不关心用户验证
-	}
+	//authSelect := protocol.AuthenticatorSelection{
+	//	//AuthenticatorAttachment: protocol.CrossPlatform,           // platform：表示仅接受平台内置的、无法移除的认证器，如手机的指纹识别设备 cross-platform：表示仅接受外部认证器，如 USB Key (safari 可能会报错)
+	//	RequireResidentKey: protocol.ResidentKeyUnrequired(), // 是否要求将私钥钥永久存储于认证器中 // 设置为true可实现无用户名登录
+	//	UserVerification:   protocol.VerificationDiscouraged, // 依赖方不关心用户验证
+	//}
 
 	// （可选）用于标识要排除的凭证，可以避免同一个用户多次注册同一个认证器。如果用户试图注册相同的认证器，用户代理会抛出 InvalidStateError 错误。数组中的每一项都是一个公钥凭证对象
 	var excludeList []protocol.CredentialDescriptor
+	//for _, v := range user.WebAuthnCredentials() {
+	//	excludeList = append(excludeList, protocol.CredentialDescriptor{
+	//		Type:         protocol.PublicKeyCredentialType,
+	//		CredentialID: v.ID,
+	//		Transport: []protocol.AuthenticatorTransport{
+	//			protocol.USB,
+	//			protocol.Internal,
+	//			protocol.NFC,
+	//			protocol.BLE,
+	//		},
+	//	})
+	//}
+
 	for _, v := range user.WebAuthnCredentials() {
 		excludeList = append(excludeList, protocol.CredentialDescriptor{
-			Type:         "public-key",
+			Type:         protocol.PublicKeyCredentialType,
 			CredentialID: v.ID,
-			Transport: []protocol.AuthenticatorTransport{
-				protocol.USB,
-				protocol.Internal,
-				protocol.NFC,
-				protocol.BLE,
-			},
+			Transport:    cfg.FD.Register.ExcludeCredentials.Transports,
 		})
 	}
+	if len(excludeList) > 0 {
+		opts = append(opts, webauthn.WithExclusions(excludeList))
+	}
 
+	if cfg.FD.Register.Attestation != "" {
+		opts = append(opts, webauthn.WithConveyancePreference(cfg.FD.Register.Attestation))
+	}
+
+	if cfg.FD.Register.Timeout != 0 {
+		opts = append(opts, func(cco *protocol.PublicKeyCredentialCreationOptions) {
+			cco.Timeout = int(cfg.FD.Register.Timeout)
+		})
+	}
 	// Updating the ConveyancePreference options.
 	// See the struct declarations for values
 	//conveyancePref := protocol.PreferNoAttestation // 如果你没有高安全需求（如银行交易等），请不要向认证器索取证明，即将 attestation 设置为 "none" 对于普通身份认证来说，要求证明不必要的，且会有浏览器提示打扰到用户
@@ -59,14 +104,22 @@ func Begin(c *gin.Context) {
 	// Handle next steps
 
 	//options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithConveyancePreference(conveyancePref), webauthn.WithExtensions(extension))
-	options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithExclusions(excludeList))
+	//options, sessionData, err := cfg.WAWeb.BeginRegistration(&user, webauthn.WithAuthenticatorSelection(authSelect), webauthn.WithExclusions(excludeList))
+	var options *protocol.CredentialCreation
+	var sessionData *webauthn.SessionData
+	if len(opts) > 0 {
+		options, sessionData, err = cfg.WAWeb.BeginRegistration(&user, opts...)
+	} else {
+		options, sessionData, err = cfg.WAWeb.BeginRegistration(&user)
+	}
 	// handle errors if present
 	if err != nil {
 		fail(c, err)
 		return
 	}
 	// store the sessionData values
-	marshal, err := json.Marshal(sessionData)
+	var marshal []byte
+	marshal, err = json.Marshal(sessionData)
 	if err != nil {
 		fail(c, err)
 		return

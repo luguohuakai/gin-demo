@@ -18,33 +18,62 @@ import (
 )
 
 func LoginBegin(c *gin.Context) {
-	user, err := model.GetLoginUser(c.Query("username")) // Find the user
+	var err error
+	var user model.User
+	user, err = model.GetLoginUser(c.Query("username")) // Find the user
 	if err != nil {
 		fail(c, err)
 		return
 	}
 
+	var opts []webauthn.LoginOption
+
 	// Updating the AuthenticatorSelection options.
 	// See the struct declarations for values
 	allowList := make([]protocol.CredentialDescriptor, 1)
 	webAuthnCredentials := user.WebAuthnCredentials()
+	//for k, v := range webAuthnCredentials {
+	//	allowList[k] = protocol.CredentialDescriptor{
+	//		//CredentialID: credentialToAllowID, // 允许认证的凭据ID
+	//		CredentialID: v.ID,                             // 允许认证的凭据ID
+	//		Type:         protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
+	//		Transport: []protocol.AuthenticatorTransport{
+	//			protocol.USB,
+	//			protocol.Internal,
+	//			protocol.NFC,
+	//			protocol.BLE,
+	//		}, // 允许的认证器类型
+	//	}
+	//}
 	for k, v := range webAuthnCredentials {
 		allowList[k] = protocol.CredentialDescriptor{
-			//CredentialID: credentialToAllowID, // 允许认证的凭据ID
-			CredentialID: v.ID,                             // 允许认证的凭据ID
-			Type:         protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
-			Transport: []protocol.AuthenticatorTransport{
-				protocol.USB,
-				protocol.Internal,
-				protocol.NFC,
-				protocol.BLE,
-			}, // 允许的认证器类型
+			CredentialID: v.ID,                                     // 允许认证的凭据ID
+			Type:         protocol.PublicKeyCredentialType,         // 允许认证的类型 公钥认证
+			Transport:    cfg.FD.Login.AllowCredentials.Transports, // 允许的认证器类型
 		}
+	}
+	if len(allowList) > 0 {
+		opts = append(opts, webauthn.WithAllowedCredentials(allowList))
+	}
+
+	if cfg.FD.Login.Timeout != 0 {
+		opts = append(opts, func(cco *protocol.PublicKeyCredentialRequestOptions) {
+			cco.Timeout = int(cfg.FD.Login.Timeout)
+		})
+	}
+
+	if cfg.FD.Login.UserVerification != "" {
+		opts = append(opts, webauthn.WithUserVerification(cfg.FD.Login.UserVerification))
 	}
 
 	// Handle next steps
-
-	options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithAllowedCredentials(allowList), webauthn.WithUserVerification(protocol.VerificationDiscouraged))
+	var options *protocol.CredentialAssertion
+	var sessionData *webauthn.SessionData
+	if len(opts) > 0 {
+		options, sessionData, err = cfg.WAWeb.BeginLogin(&user, opts...)
+	} else {
+		options, sessionData, err = cfg.WAWeb.BeginLogin(&user)
+	}
 	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user)
 	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithUserVerification(protocol.VerificationPreferred))
 	// handle errors if present
@@ -53,7 +82,8 @@ func LoginBegin(c *gin.Context) {
 		return
 	}
 	// store the sessionData values
-	marshal, err := json.Marshal(sessionData)
+	var marshal []byte
+	marshal, err = json.Marshal(sessionData)
 	if err != nil {
 		fail(c, err)
 		return
