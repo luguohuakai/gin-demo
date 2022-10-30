@@ -2,11 +2,11 @@
 
 ```
 主程序: webauthn
-安装位置: /srun3/bin
+安装位置: /srun3/bin/webauthn
 主程序需要执行权限
 chmod +x webauthn
 配置文件: webauthn.yaml
-安装位置: /srun3/etc
+安装位置: /srun3/bin/webauthn/etc
 ```
 
 ```
@@ -52,12 +52,10 @@ sso:
 ```
 启动方式
 - 调试启动: 
-cd /srun3/bin
-./webauthn
+cd /srun3/bin/webauthn;./webauthn
 
 - 后台启动: 
-cd /srun3/bin
-nohup ./webauthn &
+cd /srun3/bin/webauthn;nohup ./webauthn &
 ```
 
 ```

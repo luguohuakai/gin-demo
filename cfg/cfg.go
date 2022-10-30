@@ -13,7 +13,7 @@ func Init() (err error) {
 	viper.AddConfigPath("etc/dev")  // 先找dev 如果找到就不再找下面的配置了
 	viper.AddConfigPath("etc/prod") // 再找prod
 	viper.AddConfigPath("/srun3/etc")
-	viper.AddConfigPath("/srun3/bin/etc/prod") // 正式环境绝对路径
+	viper.AddConfigPath("/srun3/bin/webauthn/etc/prod") // 正式环境绝对路径
 	viper.AddConfigPath(".")
 	err = viper.ReadInConfig()
 	if err != nil {

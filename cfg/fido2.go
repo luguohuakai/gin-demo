@@ -43,7 +43,7 @@ func InitFido2() (err error) {
 	VP.SetConfigType("yaml")
 	VP.AddConfigPath("etc")
 	VP.AddConfigPath("/srun3/etc")
-	VP.AddConfigPath("/srun3/bin/etc")
+	VP.AddConfigPath("/srun3/bin/webauthn/etc")
 	VP.AddConfigPath(".")
 	err = VP.ReadInConfig()
 	if err != nil {

@@ -68,6 +68,7 @@ func Setup() *gin.Engine {
 	r.POST("/admin/login", authMiddleware.LoginHandler)
 
 	admin := r.Group("admin")
+	admin.Use(authMiddleware.MiddlewareFunc())
 	admin.GET("/test", controller.Test)
 	admin.GET("/all-cfg", controller.AllCfg)
 	admin.POST("/set-login-trans", controller.SetLoginTransports)
@@ -86,7 +87,6 @@ func Setup() *gin.Engine {
 	admin.POST("/active", controller.Limit(POST), controller.Active)
 	admin.GET("/license-status", controller.LicenseStatus)
 	admin.GET("/get-license", controller.GetLicense)
-	admin.Use(authMiddleware.MiddlewareFunc())
 
 	admin.GET("/refresh_token", authMiddleware.RefreshHandler)
 	admin.GET("/logout", authMiddleware.LogoutHandler)
