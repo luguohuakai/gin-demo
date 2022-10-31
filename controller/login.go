@@ -2,14 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
-	"github.com/luguohuakai/north/srun"
 	"github.com/spf13/viper"
-	"net/http"
 	"srun/cfg"
 	"srun/dao/mysql"
 	"srun/dao/redis"
@@ -32,19 +29,6 @@ func LoginBegin(c *gin.Context) {
 	// See the struct declarations for values
 	allowList := make([]protocol.CredentialDescriptor, 1)
 	webAuthnCredentials := user.WebAuthnCredentials()
-	//for k, v := range webAuthnCredentials {
-	//	allowList[k] = protocol.CredentialDescriptor{
-	//		//CredentialID: credentialToAllowID, // 允许认证的凭据ID
-	//		CredentialID: v.ID,                             // 允许认证的凭据ID
-	//		Type:         protocol.PublicKeyCredentialType, // 允许认证的类型 公钥认证
-	//		Transport: []protocol.AuthenticatorTransport{
-	//			protocol.USB,
-	//			protocol.Internal,
-	//			protocol.NFC,
-	//			protocol.BLE,
-	//		}, // 允许的认证器类型
-	//	}
-	//}
 	for k, v := range webAuthnCredentials {
 		allowList[k] = protocol.CredentialDescriptor{
 			CredentialID: v.ID,                                     // 允许认证的凭据ID
@@ -74,8 +58,6 @@ func LoginBegin(c *gin.Context) {
 	} else {
 		options, sessionData, err = cfg.WAWeb.BeginLogin(&user)
 	}
-	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user)
-	//options, sessionData, err := cfg.WAWeb.BeginLogin(&user, webauthn.WithUserVerification(protocol.VerificationPreferred))
 	// handle errors if present
 	if err != nil {
 		fail(c, err)
@@ -112,7 +94,6 @@ func LoginFinish(c *gin.Context) {
 		return
 	}
 	// using gorilla/sessions it could look like this
-	//sessionData := store.Get(r, "login-session")
 	parsedResponse, err := protocol.ParseCredentialRequestResponseBody(c.Request.Body)
 	if err != nil {
 		fail(c, err)
@@ -136,22 +117,5 @@ func LoginFinish(c *gin.Context) {
 		fail(c, err)
 		return
 	}
-	// If login was successful, handle next steps
-	//success(c)
-	//return
-	// : 调用4k单点或无密码认证
-	sso, e := srun.Sso(viper.GetString("sso.secret"), viper.GetString("sso.url"), c.Query("username"), c.Query("ip"), c.Query("ac_id"), "login")
-	if e != nil {
-		fail(c, errors.New("sso : "+e.Error()))
-		return
-	} else {
-		res := srun.GetSsoSuccessOrError(*sso)
-		if res.IsSuccess {
-			success(c, returnData(sso, http.StatusOK, res.Message))
-			return
-		} else {
-			fail(c, errors.New("sso - "+res.Message), returnData(sso, http.StatusOK))
-			return
-		}
-	}
+	success(c)
 }

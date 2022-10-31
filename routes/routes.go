@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"log"
-	"net/http"
 	"srun/controller"
 	"srun/logger"
 	"srun/logic"
@@ -37,39 +36,32 @@ func Setup() *gin.Engine {
 
 	authMiddleware := logic.JWT()
 
-	// todo: license 检查中间件
-
 	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
 		log.Printf("NoRoute claims: %#v\n", claims)
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
+		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page Not Found Error"})
 	})
 
+	// 前端静态资源
 	r.StaticFile("/", "/srun3/www/webauthn/index.html")
-	r.StaticFile("/index2.html", "/srun3/www/webauthn/index2.html")
 	r.Static("/js", "/srun3/www/webauthn/js")
 	r.Static("/css", "/srun3/www/webauthn/css")
 	r.Static("/image", "/srun3/www/webauthn/image")
 	r.Static("/assets", "/srun3/www/webauthn/assets")
 	r.Static("/icons", "/srun3/www/webauthn/icons")
 
-	r.GET("/ping", logic.CheckLicenseMiddleware, func(c *gin.Context) {
-		c.String(http.StatusOK, "pong")
-	})
-
-	r.GET("/demo", controller.Demo)
-
+	// webauthn注册/登录
 	r.POST("/register/begin", logic.CheckLicenseMiddleware, controller.Limit(POST), controller.Begin)
 	r.POST("/register/finish", controller.Finish)
-	r.GET("/register/user-exists", controller.Limit(GET), controller.UserExists)
-	r.GET("/login/begin", logic.CheckLicenseMiddleware, controller.LoginBegin)
+	r.GET("/login/begin", logic.CheckLicenseMiddleware, controller.Limit(GET), controller.LoginBegin)
 	r.POST("/login/finish", controller.LoginFinish)
 
+	// 后台登录
 	r.POST("/admin/login", authMiddleware.LoginHandler)
 
+	// 后台接口
 	admin := r.Group("admin")
 	admin.Use(authMiddleware.MiddlewareFunc())
-	admin.GET("/test", controller.Test)
 	admin.GET("/all-cfg", controller.AllCfg)
 	admin.POST("/set-login-trans", controller.SetLoginTransports)
 	admin.POST("/set-attestation", controller.SetAttestation)
@@ -90,7 +82,6 @@ func Setup() *gin.Engine {
 
 	admin.GET("/refresh_token", authMiddleware.RefreshHandler)
 	admin.GET("/logout", authMiddleware.LogoutHandler)
-	admin.GET("/hello", controller.HelloHandler)
 
 	return r
 }

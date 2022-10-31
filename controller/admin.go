@@ -1,7 +1,6 @@
 package controller
 
 import (
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"net/http"
@@ -16,26 +15,6 @@ import (
 type User struct {
 	Name  []string `json:"name,omitempty" binding:"required,max=6,inArray=11 22,omitempty"`
 	Email string   `json:"email" binding:"email"`
-}
-
-func Test(c *gin.Context) {
-	var u User
-	err := c.ShouldBindJSON(&u)
-	if err != nil {
-		fail(c, err)
-		return
-	}
-	success(c)
-}
-
-func HelloHandler(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
-	user, _ := c.Get(logic.IdentityKey)
-	c.JSON(200, gin.H{
-		"userID":   claims[logic.IdentityKey],
-		"userName": user.(*model.Admin).Username,
-		"text":     "Hello World.",
-	})
 }
 
 // AllCfg 获取全部配置
@@ -345,9 +324,6 @@ func GetLicense(c *gin.Context) {
 	}
 	success(c, a.Auth)
 }
-
-// todo: 检查北向接口
-// todo: 检查sso接口
 
 // 后台生成app_id app_secret
 

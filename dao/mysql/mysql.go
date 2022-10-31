@@ -16,14 +16,6 @@ var DBErr error
 // Init 初始化mysql
 func Init() error {
 	var i = 0
-	//fmt.Printf(
-	//	"%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local&timeout=2s&readTimeout=2s\n",
-	//	viper.GetString("mysql.user"),
-	//	viper.GetString("mysql.pwd"),
-	//	viper.GetString("mysql.ip"),
-	//	viper.GetInt("mysql.port"),
-	//	viper.GetString("mysql.dbname"),
-	//)
 	for {
 		if DB, DBErr = gorm.Open(
 			"mysql",
